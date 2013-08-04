@@ -6,6 +6,7 @@ using namespace std;
 //default constructor
 JetMatching::JetMatching(){
   cout<<"constructor"<<endl;
+  cout<<"i want to fart now! "<<endl;
 }
 
 void JetMatching::SetParam(double *DeltaR , double etamax, double ptmin) {
