@@ -26,13 +26,13 @@ bool isNu(const Particle &ptcl) { return ptcl.idAbs()==12 || ptcl.idAbs()==14 ||
 void fatal(TString msg) { printf("ERROR:\n\n  %s\n\n",msg.Data()); abort(); }
 void PrintPtcl(const Particle &ptcl, TString comment="") {
   printf("  (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) pdgID %4d : %s\n",
-	 ptcl.pT(),ptcl.eta(),ptcl.phi(),ptcl.m(),ptcl.id(),comment.Data());
+    ptcl.pT(),ptcl.eta(),ptcl.phi(),ptcl.m(),ptcl.id(),comment.Data());
 } 
 void PrintPseudojets( const vector<fastjet::PseudoJet> &);
 
 //main function
 int  main(int argc, char* argv[]) {
-  
+
 
   bool partonMode=true;
   bool debug= false;
@@ -40,7 +40,7 @@ int  main(int argc, char* argv[]) {
   // Create the ROOT application environment. 
   TApplication theApp("hist", &argc, argv);
 
-  //generator
+  //generator without banner
   Pythia pythia("",false);
   
   //read settings from command file
@@ -62,10 +62,9 @@ int  main(int argc, char* argv[]) {
     pythia.readString("PartonLevel:FSR = on");
     pythia.readString("PartonLevel:ISR = on ");
     pythia.readString("HadronLevel:all = on ");
-    } 
+  } 
 
 
-  
   //beam initialization (proton,proton, 7000 GeV)
   pythia.init(2212,2212,7000);
   
@@ -74,8 +73,8 @@ int  main(int argc, char* argv[]) {
   TString of_name = partonMode ? "ttbar_partonLevel_histos_"+string(argv[1])+".root" : "ttbar_hadronLevel_histograms.root";
   TFile* outFile = new TFile("rootplots/"+of_name, "RECREATE");
 
-
   //_____________________________________________________________________________________
+
   
   //truth 
   TH1F* top_mass  = new TH1F("m_top"," truth mass ; mass [GeV] ",20,130.,190.);
@@ -117,19 +116,20 @@ int  main(int argc, char* argv[]) {
   
   //___________________________________________________________________________
 
+  //argumetns that are sent in: clustering radius, matching deltaR, etc
+  int nEv=atol(argv[2]);  
+  double  R = .3 + .1*double( atof( argv[1]) );
+  double delta_R = double( atof(   argv[2]) );
 
-  double R = .3 + .1*double(atof(argv[1]) );
-
+  //class instances
   fjClustering *clustering         = new fjClustering(fastjet::antikt_algorithm, R, fastjet::E_scheme, fastjet::Best); 
   JetMatching  *jetcuts            = new JetMatching();
   MyTopEvent   *reconstruction     = new MyTopEvent();
 
-  //number of events
-  int nEv=atol(argv[2]);  
-  int  munus(0);
+  
+  if(debug) cout<<"There are "<<nEv<<" events! and R="<<R<<endl;
   
   // begin event loop 
-  cout<<"There are "<<nEv<<" events! and R="<<R<<endl;
   for (int iEv = 0; iEv < nEv; ++iEv) { 
     Event &event = pythia.event;
 
@@ -142,6 +142,7 @@ int  main(int argc, char* argv[]) {
       vector<Particle> W;
       vector<Particle> Wplus;
       vector<Particle> Wminus;
+  
     };
     
     struct second{
@@ -149,29 +150,30 @@ int  main(int argc, char* argv[]) {
       vector<Particle> muons;
       vector<Particle> electrons;
     };
-  
+
     struct minestruct{
-      
+
       first  partons;
       second leptons;
 
     } data;
-  
- 
+
+     //minestruct* date = new minestruct;
+
     //reset objects    
     clustering->ClearJets();
     reconstruction->Clear();
     
     if (!pythia.next()) continue;//generate events.skip if necessary
     if (debug && iEv==0) {pythia.info.list(); pythia.event.list();} 
-  
+
     // storage for B Hadrons
     vector<Particle> Bhadrons;
     
     // storage for neutrinos, leptons, and _all_ final particles (parton or hadron level particles depending on mode)
     vector<Particle>  all_stbl_ptcls, MET; 
     
-   
+
     //stable/final particles--------------------------------------------------------
     
     bool skipevent1(false),skipevent2(false),skip(false);
@@ -183,11 +185,11 @@ int  main(int argc, char* argv[]) {
       const Particle &m4 = event[m2.mother2()];
 
 
-      //skip dilepton event
-    if ( particle.isLepton() && (m1.id() == -24 || m2.id() == -24) &&  ( m3.id() == -6 || m4.id()== -6) )
+    //skip dilepton event
+      if ( particle.isLepton() && (m1.id() == -24 || m2.id() == -24) &&  ( m3.id() == -6 || m4.id()== -6) )
        { skipevent1 = true; break; }
 
-      //find tops
+    //find tops
      if(particle.idAbs() == 6   &&   particle.daughter1()!= particle.daughter2()  &&  ( particle.daughter1()!=6 || particle.daughter2() != 6 ) ) {
        data.partons.tops.push_back(particle);
        if(particle.id()==6)
@@ -230,23 +232,25 @@ int  main(int argc, char* argv[]) {
 
    }
 
-    
     //skip if all hadronic decay or tau from wplus
-    if( skipevent1 && skipevent2 ){ cout<<"dileptonic decay from t-tbar"<<endl;  continue; }
-    if( skip ){ cout<<"we found a tau! "<<endl; continue;} 
+   if( skipevent1 && skipevent2 ){ cout<<"dileptonic decay from t-tbar"<<endl;  continue; }
+   if( skip ){ cout<<"we found a tau! "<<endl; continue;} 
 
-    if ( (data.partons.top.size() + data.partons.antitop.size()) > 2) {
-      pythia.event.list();
-      fatal(Form("Event %d has too many good tops!?",iEv));
-    }
+   if ( (data.partons.top.size() + data.partons.antitop.size()) > 2) {
+    pythia.event.list();
+    fatal(Form("Event %d has too many good tops!?",iEv)); }
 
-    if(  data.leptons.electrons.size() == 0 &&  data.leptons.muons.size() == 0) { cout<<"\n no electrons and no  muons: All hadronic decay?!"<< endl;
-      continue;}//skip this event
-    if( data.leptons.nutrinos.size() == 0 ){cout<<"where are my nutrinos!"<<endl; continue;}
 
-   
+    //skip this event
+    if(  data.leptons.electrons.size() == 0 &&  data.leptons.muons.size() == 0) {cout<<"\n no electrons and no  muons: All hadronic decay?!"<< endl; continue; }
 
-    //__________________________________________________________
+
+
+    if( data.leptons.nutrinos.size() == 0 ){ cout<<"where are my nutrinos!"<<endl; continue;}
+
+
+
+    //find w decay products-----------------------------------------------
 
 
     //here we look for the decay products of the W 
@@ -254,7 +258,7 @@ int  main(int argc, char* argv[]) {
     std::pair <int,int> daughters;
     for ( size_t itop=0; itop < data.partons.tops.size(); ++itop) {
       const Particle& top = data.partons.tops[itop];
-            
+
       // We have a top! it should go to a W and a b (most of the time)
       int W_index = top.daughter1(), b_index = top.daughter2();
       if (event[W_index].idAbs()!= 24) { W_index = top.daughter2(); b_index = top.daughter1(); } 
@@ -266,7 +270,7 @@ int  main(int argc, char* argv[]) {
       //store particles
       data.partons.W.push_back(Wboson);
       data.partons.B.push_back(bquark);
-      
+
       //check for decay channels here by looking for sisters
       //sisterList();
 
@@ -275,73 +279,73 @@ int  main(int argc, char* argv[]) {
        cout <<"daughters of"<<tup<< " are: "<<event[W_index].id() <<" and  " <<event[b_index].id()<<"\n"<<endl;
      }
 
-   }
+   } 
 
-   
-    //we now cluster our particles----------------------------------------------------------------------------
-     
-   
+   if (debug  && iEv < 10) {
+    printf("\nEvent %d:\n",iEv);
+    printf("  We found %d b-quarks\n",int(data.partons.B.size()));
+    for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i));
+      clustering->PrintJets(); }
+
+
+    //cluster particles and then do matching--------------------------------------------------
+
+
     //cluster particles
     clustering->doClustering();
-    
+
     vector<fastjet::PseudoJet> all_jets = clustering->GetJets();   
     vector<fastjet::PseudoJet> btags, lightjets;
 
     //fastjet::sorted_by_pt(matchedjets);
 
-    if (debug  && iEv < 10) {
-      printf("\nEvent %d:\n",iEv);
-      printf("  We found %d b-quarks\n",int(data.partons.B.size()));
-      for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i));
-        clustering->PrintJets();
-    }
-    
-     
-    //Match particles and jets--------------------------------------------------
+    bool skipoverlapremoval = false;
 
-    
-    if(data.leptons.muons.size()==0) goto next;
+    if(skipoverlapremoval) goto step_2;
+
+    if(data.leptons.muons.size()==0) goto step_1;
     jetcuts->SetParam(.4,2.4,3.0);
-    all_jets= jetcuts->OverlapRemoval(data.leptons.muons,all_jets);
-    
-  next:
-    if(data.leptons.electrons.size() == 0) goto next2;
+    all_jets= jetcuts->OverlapRemoval(data.leptons.muons, all_jets);
+
+    step_1:
+    if(data.leptons.electrons.size() == 0) goto step_2;
     jetcuts->SetParam(.4, 2.4, 3.0);
     all_jets= jetcuts->OverlapRemoval(data.leptons.electrons, all_jets);
 
-  next2:
-    jetcuts->SetParam(.4, 2.4, 10.0); // delta R, etamax, ptmin
-    btags = jetcuts->Match( data.partons.B , all_jets);
-    lightjets = jetcuts->RemoveSubset(btags, all_jets);
+    step_2:
+      //find b jets/ delta R, etamax, ptmin  
+    jetcuts->SetParam(.4, 2.4, 10.0); 
+    btags = jetcuts->Match(data.partons.B, all_jets);
+    lightjets= jetcuts->RemoveSubset(btags, all_jets);
 
-    //skip event if requirements for reconstruction are not met
-    if( btags.size() < 2  || lightjets.size() < 2  ) continue;
-    
+
+
+    //pseudotop construction-------------------------------------------------------------- 
+
+
+
+    //check if reuiremements are met
+    if (! reconstruction->SelectedEvent(btags, lightjets, 30.0)) { continue;}
+
     if( debug && iEv < 20){
       cout<<"Bjets are: "<<endl;
       PrintPseudojets(btags);
       cout<<" Lightjets: \n ";
       PrintPseudojets(lightjets);
     }
-    
 
-    //pseudotop construction-------------------------------------------------------------- 
-    
-    
     //call function that returns the pseudojet of the leptonic pseudotop
     //We send in bjet, non-bjets, nutrinos, muons, and electrons 
     fastjet::PseudoJet leptonpseudotop = reconstruction->Recon_Mass_Method_1(btags, lightjets, 
-      data.leptons.nutrinos, data.leptons.muons,data.leptons.electrons );
-    
-    if(leptonpseudotop.m()==0) continue;
-    
+                                                                             data.leptons.nutrinos, data.leptons.muons,data.leptons.electrons );
+
 
     //W:s
     whad->Fill(           reconstruction->Returnhadronicw());
     wlep->Fill(           reconstruction->Returnleptonicw() );
     bestbtop->Fill(       reconstruction->Returnbestbtop() );
     withhad ->Fill(       reconstruction->Returnlastbtop() );
-    
+
     //information about truth parton
     top_mass->Fill(        data.partons.top[0].m() );
     top_eta->Fill(         data.partons.top[0].eta() );
@@ -349,33 +353,9 @@ int  main(int argc, char* argv[]) {
     top_pt->Fill(          data.partons.top[0].pT() );
 
     //check is our pseudo lpeton top matches a tbar
-    bool tbarmatch = (reconstruction-> TopMatch( data.partons.antitop, leptonpseudotop) ) < .6;
 
-    // check if our pseudo-top matches an actal truth top
-    bool match = (reconstruction-> TopMatch( data.partons.top, leptonpseudotop) ) < .6;
-
-
-    
-
-
- 
-
-    //separate histograms of matched and unmatched pseudo top
-    if(tmatch){
-      pseudo_top_match_mass->Fill(   leptonpseudotop.m()   );
-      pseudo_top_match_eta->Fill(    leptonpseudotop.eta() );
-      pseudo_top_match_pt ->Fill(    leptonpseudotop.pt()  );
-    }
-    else if(tbarmatch) {
-     pseudo_tbar_nomatch_mass->Fill(     leptonpseudotop.m());
-     pseudo_tbar_nomatch_eta->Fill(      leptonpseudotop.m());
-     pseudo_tbar_nomatch_pt->Fill(       leptonpseudotop.m());
-    }
-    else {
-      nomatch_mass->Fill(      leptonpseudotop.m()   );
-      nomatch_eta ->Fill(      leptonpseudotop.eta() );
-      nomatch_pt  ->Fill(      leptonpseudotop.pt()  );
-    }
+    vector<bool> matches = reconstruction-> TopMatch( data.partons.tops, leptonpseudotop, hadronicpseudotop) ;
+    bool tmatch = matches[0], tbarmatch=matches[1];
 
 
     // keep track on the matching efficiency
@@ -385,51 +365,67 @@ int  main(int argc, char* argv[]) {
     matchingEff_vs_topmass->Fill(    leptonpseudotop.m(),   tmatch);
     matchingEff_vs_topeta->Fill(     leptonpseudotop.eta(), tmatch);
 
-    
     matchingEff_vs_tbmass->Fill(  data.partons.antitop[0].m(), tbarmatch );
     tbar_matching->Fill( leptonpseudotop.m(),tbarmatch );
 
-    //find the efficiency of truth matching as a function of w mass, pz, 
-
     
-    } //end of event loop
-  
+    //separate histograms of matched and unmatched pseudo top
+    if(tmatch){
+      pseudo_top_match_mass->Fill(   leptonpseudotop.m()   );
+      pseudo_top_match_eta->Fill(    leptonpseudotop.eta() );
+      pseudo_top_match_pt ->Fill(    leptonpseudotop.pt()  );
+    }
+    else if(tbarmatch) {
+       pseudo_tbar_nomatch_mass->Fill(     leptonpseudotop.m());
+       pseudo_tbar_nomatch_eta->Fill(      leptonpseudotop.m());
+       pseudo_tbar_nomatch_pt->Fill(       leptonpseudotop.m());
+     } 
+     else 
+     {
+      nomatch_mass->Fill(      leptonpseudotop.m()   );
+      nomatch_eta ->Fill(      leptonpseudotop.eta() );
+      nomatch_pt  ->Fill(      leptonpseudotop.pt()  );
+    }
+    
+
+  } //end of event loop
+
 
 
 
   //_____________________________________________________
 
   if(debug) cout<<" Times reached the filling of leptons: " <<munus<<endl;
- 
+
   // Statistical summary
   if(debug) pythia.stat(); 
-  
+
   //write to file and close it
   outFile->Write();
   outFile->Close();
-  
+
   return 0;
-  
+
   } //end main function 
 
 
 //check for b hadrons
-bool isBhadron(int pdg) {
-  if (pdg<0) pdg *=-1;
-  if (pdg<500) return false;
-  if (pdg/100%5 == 0 || pdg/1000==5) return true; 
-  return false;
-}
+  bool isBhadron(int pdg) {
+    if (pdg<0) pdg *=-1;
+    if (pdg<500) return false;
+    if (pdg/100%5 == 0 || pdg/1000==5) return true; 
+    return false;
+  }
 
-void PrintPseudojets( const vector<fastjet::PseudoJet> &myjets) {
-  
-  
-  for(size_t n(0); n < myjets.size(); ++n) {
-    printf(" (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) : \n",
-	       myjets[n].pt(),
-	       myjets[n].eta(),
-	       myjets[n].phi(),
-	   myjets[n].m());	     
-  }  
-}
+  void PrintPseudojets( const vector<fastjet::PseudoJet> &myjets) {
+
+
+    for(size_t n(0); n < myjets.size(); ++n) {
+      printf(" (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) : \n",
+        myjets[n].pt(),
+        myjets[n].eta(),
+        myjets[n].phi(),
+        myjets[n].m());	     
+    }  
+  }
 

@@ -31,7 +31,7 @@ class JetMatching{
   void PrintMatches();
   bool ComparePt(fastjet::PseudoJet, fastjet::PseudoJet );
   bool ChiSquare(TLorentzVector, TLorentzVector );
-  bool SelectedEvent();
+  
 
   //recieves ptcut, etacut, and jets to be cut
   Pseudojets Cuts(const Pseudojets&, double ptcut, double etacut );
@@ -47,6 +47,8 @@ class JetMatching{
  private:
   
   double m_DeltaR, m_ptmin, m_etamax;
+
+  int m_size_of_bjets, m_size_of_lightjets;
   
   
 };

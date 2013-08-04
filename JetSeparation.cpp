@@ -10,7 +10,7 @@ JetMatching::JetMatching(){
 
 void JetMatching::SetParam(double *DeltaR , double etamax, double ptmin) {
   //values set
-  m_DeltaR= DeltaR[x][y]; 
+  m_DeltaR= DeltaR; 
   m_etamax = etamax;
   m_ptmin = ptmin;
 
@@ -20,9 +20,11 @@ void JetMatching::SetParam(double *DeltaR , double etamax, double ptmin) {
  
 
 //does matching
-vector<fastjet::PseudoJet> JetMatching::Match(const vector<Pythia8::Particle> &particles, const  vector<fastjet::PseudoJet> &input_jets ) {
+Pseudovector JetMatching::Match(const Particlevector &particles, const  Pseudovector &input_jets ) {
 
-  vector<fastjet::PseudoJet> matchedjets;
+  //vector of matched jets
+  Pseudovector matchedjets;
+
   for( size_t ijet=0 ; ijet < input_jets.size() ; ++ijet) {
     const fastjet::PseudoJet &nth_jet = input_jets[ijet];
 
@@ -49,7 +51,7 @@ vector<fastjet::PseudoJet> JetMatching::Match(const vector<Pythia8::Particle> &p
 
 
 //send in clustered jets and particles that should be removed from jets
-vector<fastjet::PseudoJet> JetMatching::OverlapRemoval(const vector<Pythia8::Particle> &input_particles, const vector<fastjet::PseudoJet> &removal_jets){
+Pseudovector JetMatching::OverlapRemoval(const Particlevector &input_particles, const Pseudovector &removal_jets){
   vector< fastjet::PseudoJet> jets;
 
   //overlap removal
@@ -77,8 +79,8 @@ vector<fastjet::PseudoJet> JetMatching::OverlapRemoval(const vector<Pythia8::Par
 }
 
 //pt, eta cuts
-vector<fastjet::PseudoJet> Cuts ( const vector<fastjet::PseudoJet> & input_jets, double ptcuts, double etacuts) {
- vector< fastjet::PseudoJet> cutjets;
+Pseudovector Cuts ( const Pseudovector& input_jets, double ptcuts, double etacuts) {
+ Pseudovector cut_jets;
 
  for (size_t ijet=0; ijet < input_jets.size();++ijet) {
   const fastjet:: PseudoJet &jet = input_jets[ijet];
@@ -93,7 +95,7 @@ vector<fastjet::PseudoJet> Cuts ( const vector<fastjet::PseudoJet> & input_jets,
 return cutjets;
 };
 
-bool JetMatching::ComparePt(fastjet::PseudoJet a, fastjet::PseudoJet b) {
+bool JetMatching::ComparePt(fastjet::PseudoJet a, fastjet::Pseudovector b) {
   return a.pt() > b.pt();
 }
  
