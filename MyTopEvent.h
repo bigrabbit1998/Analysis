@@ -16,7 +16,7 @@ public:
 	typedef vector<fastjet::PseudoJet> mypseudojets;
 	typedef vector<Pythia8::Particle> myparticlejets;
 
-  //constructor
+   //constructor
 	MyTopEvent();
 
 
@@ -31,7 +31,7 @@ public:
 
 	int BestCombination(const mypseudojets &, fastjet::PseudoJet & );
 
-	double TopsMatch( vector<Pythia8::Particle> & , fastjet::PseudoJet& );
+	double TopsMatch( const myparticlejets &, fastjet::PseudoJet& );
 
 
 
@@ -43,7 +43,7 @@ public:
 	void Clear(); 
 
 	//check size of bjets, all jets, light jets, with met, 
-	bool SelectedEvent(const myparticlejets &, const mypseudojets&, double &);
+	
 
 	vector<Pythia8::Vec4> ConvertToVec4(const mypseudojets &  );
 	Pythia8::Vec4 Summation(myparticlejets &);

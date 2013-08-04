@@ -15,7 +15,6 @@ class JetMatching{
   //constructor
   JetMatching();
   
-  
   /*Jets(void);
   Jets(const Jets &src);
   void operator=(const Jets &src);
@@ -26,11 +25,13 @@ class JetMatching{
   
   // matching parameters
   void SetParam( double,double,double);
+  void Clear();
   
   //matching is done here
   void PrintMatches();
   bool ComparePt(fastjet::PseudoJet, fastjet::PseudoJet );
   bool ChiSquare(TLorentzVector, TLorentzVector );
+  bool SelectedEvent(const Pseudojets &, const Pseudojets&, double &);
   
 
   //recieves ptcut, etacut, and jets to be cut
@@ -41,7 +42,6 @@ class JetMatching{
 
   //this removes selected jets from 
   Pseudojets RemoveSubset(const Pseudojets &,const Pseudojets& );
-
 
 
  private:
