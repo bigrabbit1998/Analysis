@@ -16,40 +16,39 @@ public:
 	typedef vector<fastjet::PseudoJet> mypseudojets;
 	typedef vector<Pythia8::Particle> myparticlejets;
 
-   //constructor
+  //constructor
 	MyTopEvent();
 
 
-	fastjet::PseudoJet Recon_Mass_Method_1(const mypseudojets &, const mypseudojets&, 
-	                                       mypseudojets & nu, myparticlejets & mu, myparticlejets & els );
+	fastjet::PseudoJet Recon_Mass_Method_1( mypseudojets &, mypseudojets&, 
+	                                        myparticlejets & nu, myparticlejets & mu, myparticlejets & els );
 
 	fastjet::PseudoJet Recon_Mass_Method_2(const mypseudojets &, const mypseudojets&, 
-	                                       myparticlejets & nu, myparticlejets & mu, myparticlejets & els );
-
-	fastjet::PseudoJet LeptonicW(myparticlejets & , myparticlejets & , myparticlejets & );
+	                                       const myparticlejets & nu, const myparticlejets & mu, const myparticlejets & els );
 
 
-	int BestCombination(const mypseudojets &, fastjet::PseudoJet & );
+	int  BestPairs(mypseudojets &, mypseudojets &);
 
-	double TopsMatch( const myparticlejets &, fastjet::PseudoJet& );
+	double Return_DR( Pythia8::Particle & , fastjet::PseudoJet &);
 
-
+	int TopsMatch_Closest( myparticlejets & , fastjet::PseudoJet & );
 
 	double Returnhadronicw();
 	double Returnleptonicw();
 	double Returnbestbtop();
 	double Returnlastbtop();
 
-	void Clear(); 
+	void Clear();  
 
-	//check size of bjets, all jets, light jets, with met, 
+	void BuildMET(myparticlejets &);
 	
 
 	vector<Pythia8::Vec4> ConvertToVec4(const mypseudojets &  );
-	Pythia8::Vec4 Summation(myparticlejets &);
+	Pythia8::Vec4 Summation(const myparticlejets &);
+
 	Pythia8::Vec4 ConvertToVec4(const fastjet::PseudoJet& );
 
-
+	fastjet::PseudoJet LeptonicW(const myparticlejets &, const myparticlejets& , const myparticlejets&) ;
 
 private:
 	mypseudojets m_tops, m_bjets, m_lightjets, m_extra, m_tbars;
@@ -57,7 +56,7 @@ private:
 
 	//mass of particles/pseudojets
 	double m_mass, m_masswlep, m_masswhad, m_massbestb, m_lastbtop;
-	double m_topmass = 172.50;
+	static const double m_topmass = 172.50;
 
 	void fatal(TString msg) { printf("ERROR:\n\n  %s\n\n",msg.Data()); abort(); }
 

@@ -1,4 +1,4 @@
-// Stdlib header file for input and output.
+//       Stdlib header file for input and output.
 #include <iostream>
 
 // Header file to access Pythia 8 program elements.
@@ -24,14 +24,16 @@ bool isTau(const Particle &ptcl) { return ptcl.idAbs() ==15;}
 bool isMu(const Particle &ptcl) { return ptcl.idAbs()==13;}
 bool isNu(const Particle &ptcl) { return ptcl.idAbs()==12 || ptcl.idAbs()==14 || ptcl.idAbs()==16; }
 void fatal(TString msg) { printf("ERROR:\n\n  %s\n\n",msg.Data()); abort(); }
-void PrintPtcl(const Particle &ptcl, TString comment="") {
+void PrintPtcl(const Particle &ptcl, TString comment="")
+ {
   printf("  (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) pdgID %4d : %s\n",
-    ptcl.pT(),ptcl.eta(),ptcl.phi(),ptcl.m(),ptcl.id(),comment.Data());
-} 
+         ptcl.pT(),ptcl.eta(),ptcl.phi(),ptcl.m(),ptcl.id(),comment.Data());
+  } 
 void PrintPseudojets( const vector<fastjet::PseudoJet> &);
 
 //main function
-int  main(int argc, char* argv[]) {
+int  main(int argc, char* argv[]) 
+{
 
 
   bool partonMode=true;
@@ -46,7 +48,7 @@ int  main(int argc, char* argv[]) {
   //read settings from command file
   // if(partonMode){pythia.readFile("partonMode.cmnd");} else { pythia.readFile("particleMode.cmnd");}
   
-  pythia.initTuneEE(2);
+  //pythia.initTuneEE(2);
   pythia.readString("SoftQCD:minBias = off");
   pythia.readString("SoftQCD:singleDiffractive = off");
   pythia.readString("SoftQCD:doubleDiffractive = off");
@@ -56,7 +58,8 @@ int  main(int argc, char* argv[]) {
   pythia.readString("HadronLevel:all = on");
   pythia.readString("Top:qqbar2ttbar = on");
   pythia.readString("Top:gg2ttbar = on");
-  if (!partonMode) {
+  if (!partonMode) 
+  {
     pythia.readString("SoftQCD:minBias = on ");
     pythia.readString("HardQCD:all = on");
     pythia.readString("PartonLevel:FSR = on");
@@ -83,14 +86,19 @@ int  main(int argc, char* argv[]) {
   TH1F* top_y     = new TH1F("y_top","truth rapidity ;#it{y}^{top}", 20, -5., 5.);
 
   //not matched pseudos
-  TH1F* pseudo_nomatch_mass  = new TH1F("pseudo_mass_unmatched"," unmatched leptonic pseudotop mass; mass [GeV]", 50 ,100,250.);
-  TH1F* pseudo_nomatch_eta   = new TH1F("pseudo_eta_unmatched"," unmatched leptonic pseudotop eta; #eta", 50 ,-6,6.);
-  TH1F* pseudo_nomatch_pt    = new TH1F("pseudo_pt_unmatched"," unmatched leptonic pseudotop pt;#it{p}_{T} [GeV]", 50 ,0,330.);
+  TH1F* pseudo_tbar_match_mass  = new TH1F("pseudo_mass_tbar_matched"," unmatched leptonic pseudotop mass; mass [GeV]", 50 ,100,250.);
+  TH1F* pseudo_tbar_match_eta   = new TH1F("pseudo_eta_tbar_matched"," unmatched leptonic pseudotop eta; #eta", 50 ,-6,6.);
+  TH1F* pseudo_tbar_match_pt    = new TH1F("pseudo_pt_tbar_matched"," unmatched leptonic pseudotop pt;#it{p}_{T} [GeV]", 50 ,0,330.);
 
   //matched pseudos
-  TH1F* pseudo_match_mass  = new TH1F("pseudo_mass_matched"," matched leptonic pseudotop; mass [GeV]", 50 ,100,250.);
-  TH1F* pseudo_match_pt    = new TH1F("pseudo_pt_matched",  " matched leptonic pseudotop; #it{p}_{T} [GeV]", 50 ,0,330.);
-  TH1F* pseudo_match_eta   = new TH1F("pseudo_eta_matched"," matched leptonic pseudotop ; #eta ", 50 ,-6,6.);
+  TH1F* pseudo_top_match_mass  = new TH1F("pseudo_mass_matched"," matched leptonic pseudotop; mass [GeV]", 50 ,100,250.);
+  TH1F* pseudo_top_match_pt    = new TH1F("pseudo_pt_matched",  " matched leptonic pseudotop; #it{p}_{T} [GeV]", 50 ,0,330.);
+  TH1F* pseudo_top_match_eta   = new TH1F("pseudo_eta_matched"," matched leptonic pseudotop ; #eta ", 50 ,-6,6.);
+
+  //unmatched pseudo
+  TH1F*       nomatch_mass = new TH1F("mass_unmatched"," matched leptonic pseudotop; mass [GeV]", 50 ,100,250.);
+  TH1F*       nomatch_pt   = new TH1F("pt_unmatched"," matched leptonic pseudotop; #{p}_{T} ", 50 ,0,350.);
+  TH1F*       nomatch_eta  = new TH1F("eta_unmatched"," matched leptonic pseudotop; #eta ", 50 ,-6,6);
 
   //different Bjet-W pairs
   TH1F* bestbtop      = new TH1F("pseudo_btop_mass"," best b with lep W pseudotop mass; mass [GeV]", 50 ,100,230.);
@@ -101,15 +109,14 @@ int  main(int argc, char* argv[]) {
   TH1F* wlep = new TH1F("wleptonic"," leptonic pseudo w ; mass [GeV]", 20,40.,120.);
   
   //matching efficiency plots  
-  TProfile *matchingEff_vs_topPt   =  new TProfile("eff_vs_topPt"," Matching efficiency vs pT #it{p}_{T} ; p_{T} [Gev]; efficiency",50,0,300);
-  TProfile *nmatchingEff_vs_topPt  =  new TProfile("neff_vs_topPt","Matching inefficiency vs pT #it{p}_{T} ; p_{T} [Gev] ;  miss-match ",50,0,300);
-  TProfile *matchingEff_vs_topmass =  new TProfile("eff_vs_topMass","Matching Efficiency vs mass_{top} ; mass [GeV]; efficieny ",20,130,190);
-  TProfile *matchingEff_vs_topeta  =  new TProfile("eff_vs_topeta","Matching efficiency vs #eta ; #eta ; efficiency",20,-5,5);
-  TProfile *matchingEff_vs_bmass   =  new TProfile("eff_vs_bmass", "Matching efficiency vs mass_{b}; mass [GeV]; efficiency", 5, 0, 20);
+  TProfile*  matchingEff_vs_topPt   =  new TProfile("eff_vs_topPt"," Matching efficiency vs pT #it{p}_{T} ; p_{T} [Gev]; efficiency",50,0,300);
+  TProfile*  matchingEff_vs_topmass =  new TProfile("eff_vs_topMass","Matching Efficiency vs mass_{top} ; mass [GeV]; efficieny ",20,130,190);
+  TProfile*  matchingEff_vs_topeta  =  new TProfile("eff_vs_topeta","Matching efficiency vs #eta ; #eta ; efficiency",20,-5,5);
+  TProfile*  matchingEff_vs_bmass   =  new TProfile("eff_vs_bmass", "Matching efficiency vs mass_{b}; mass [GeV]; efficiency", 5, 0, 20);
 
-  TProfile *matchingEff_vs_tbmass  =  new TProfile("match_ratio_vs_mass", "Matching ratio top/tbar; mass [GeV]; efficiency", 5, 0, 180);
+  TProfile*  matchingEff_vs_tbmass  =  new TProfile("match_ratio_vs_mass", "Matching ratio top/tbar; mass [GeV]; efficiency", 5, 0, 180);
 
-  TProfile *tbar_matching          =  new TProfile("eff_vs_ttbarmass", "Matching efficiency vs mass_{tbar}; mass [GeV]; efficiency", 5, 0, 20);
+  TProfile*  tbar_matching          =  new TProfile("eff_vs_ttbarmass", "Matching efficiency vs mass_{tbar}; mass [GeV]; efficiency", 5, 0, 20);
 
 
 
@@ -129,7 +136,7 @@ int  main(int argc, char* argv[]) {
   if(debug) cout<<"There are "<<nEv<<" events! and R="<<R<<endl;
 
   //things for event logging
-  int nCandidateEvent(0), nSelectedevents(0);
+  int nCandidateEvent=0, nSelectedevents=0;
 
   
   // begin event loop 
@@ -138,7 +145,8 @@ int  main(int argc, char* argv[]) {
     Event &event = pythia.event;
 
     //structure objets 
-    struct first{
+    struct first
+    {
       vector<Particle> tops;
       vector<Particle> top;
       vector<Particle> antitop;
@@ -149,13 +157,15 @@ int  main(int argc, char* argv[]) {
 
     };
     
-    struct second{
+    struct second
+    {
       vector<Particle> nutrinos;
       vector<Particle> muons;
       vector<Particle> electrons;
     };
 
-    struct minestruct{
+    struct minestruct
+    {
 
       first  partons;
       second leptons;
@@ -225,7 +235,7 @@ int  main(int argc, char* argv[]) {
       //Let's cluster particles that are not leptons from topw 
    if ( particle.isLepton() && (m1.id()== 24 || m2.id() ==24) &&  (m3.id()==6 || m4.id()==6)) 
    {
-     munus++;
+
      skipevent2 = true;
      if (skipevent1 && skipevent2) break;
 
@@ -252,26 +262,24 @@ int  main(int argc, char* argv[]) {
  if( skipevent1 && skipevent2 ){ cout<<"dileptonic decay from t-tbar"<<endl;  continue; }
  if( skip ){ cout<<"we found a tau! "<<endl; continue;} 
 
- if ( (data.partons.top.size() + data.partons.antitop.size()) > 2) 
- {
+ if ( (data.partons.top.size() + data.partons.antitop.size()) > 2)  {
   pythia.event.list();
-  fatal(Form("Event %d has too many good tops!?",iEv));
-}
+  fatal(Form("Event %d has too many good tops!?",iEv)); }
 
-
+  
+  
     //skip this event
-if(  data.leptons.electrons.size() == 0 &&  data.leptons.muons.size() == 0) 
-{
-  cout<<"\n no electrons and no  muons: All hadronic decay?!"<< endl; continue; 
-}
+  if(  data.leptons.electrons.size() == 0 &&  data.leptons.muons.size() == 0) 
+  {
+    cout<<"\n no electrons and no  muons: All hadronic decay?!"<< endl; continue; 
+  }
+  
 
-
-
-if( data.leptons.nutrinos.size() == 0 )
-{
- cout<<"where are my nutrinos!"<<endl; continue;
-
-}
+  if( data.leptons.nutrinos.size() == 0 )
+  {
+   cout<<"where are my nutrinos!"<<endl; continue;
+   
+ }
 
 
 
@@ -279,10 +287,11 @@ if( data.leptons.nutrinos.size() == 0 )
 
 
     //here we look for the decay products of the W 
-    //and check the decay channels
+    //and  check the decay channels
 std::pair <int,int> daughters;
-for ( size_t itop=0; itop < data.partons.tops.size(); ++itop) {
-  const Particle& top = data.partons.tops[itop];
+for ( size_t itop=0; itop < data.partons.tops.size(); ++itop)
+{
+  const    Particle& top = data.partons.tops[itop];
 
       // We have a top! it should go to a W and a b (most of the time)
   int W_index = top.daughter1(), b_index = top.daughter2();
@@ -301,123 +310,132 @@ for ( size_t itop=0; itop < data.partons.tops.size(); ++itop) {
 
   if(debug) {
    TString tup = top.id()==6 ? " top" : " tbar";
-   cout <<"daughters of"<<tup<< " are: "<<event[W_index].id() <<" and  " <<event[b_index].id()<<"\n"<<endl;
- }
+   cout <<"daughters of"<<tup<< " are: "<<event[W_index].id() <<" and  " <<event[b_index].id()<<"\n"<<endl;  }
+ 
 
 } 
 
-if (debug  && iEv < 10) {
+if (debug  && iEv < 10)
+{
   printf("\nEvent %d:\n",iEv);
   printf("  We found %d b-quarks\n",int(data.partons.B.size()));
   for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i));
-    clustering->PrintJets(); }
+    clustering->PrintJets(); 
+}
 
 
     //cluster particles and then do matching--------------------------------------------------
 
 
     //cluster particles
-  clustering->doClustering();
+clustering->doClustering();
 
-  vector<fastjet::PseudoJet> all_jets = clustering->GetJets();   
-  vector<fastjet::PseudoJet> btags, lightjets;
+vector<fastjet::PseudoJet> all_jets = clustering->GetJets();   
+vector<fastjet::PseudoJet> btags, lightjets;
 
     //fastjet::sorted_by_pt(matchedjets);
 
-  bool skipoverlapremoval = false;
+bool skipoverlapremoval = true;
 
-  if(skipoverlapremoval) goto step_2;
+if(skipoverlapremoval) goto step_2;
 
-  if(data.leptons.muons.size()==0) goto step_1;
-  jetcuts->SetParam(.4,2.4,3.0);
-  all_jets= jetcuts->OverlapRemoval(data.leptons.muons, all_jets);
+if(data.leptons.muons.size()==0) goto step_1;
+jetcuts->SetParam(.4,2.4,3.0);
+all_jets= jetcuts->OverlapRemoval(data.leptons.muons, all_jets);
 
-  step_1:
-  if(data.leptons.electrons.size() == 0) goto step_2;
-  jetcuts->SetParam(.4, 2.4, 3.0);
-  all_jets= jetcuts->OverlapRemoval(data.leptons.electrons, all_jets);
+step_1:
+if(data.leptons.electrons.size() == 0) goto step_2;
+jetcuts->SetParam(.4, 2.4, 3.0);
+all_jets= jetcuts->OverlapRemoval(data.leptons.electrons, all_jets);
 
-  step_2:
+step_2:
       //find b jets/ delta R, etamax, ptmin  
-  jetcuts->SetParam(.4, 2.4, 10.0); 
-  btags = jetcuts->Match(data.partons.B, all_jets);
-  lightjets= jetcuts->RemoveSubset(btags, all_jets);
+jetcuts->SetParam(.4, 2.4, 10.0); 
+btags = jetcuts->Match(data.partons.B, all_jets);
+lightjets= jetcuts->RemoveSubset(btags, all_jets);
 
 
 
-    //pseudotop construction-------------------------------------------------------------- 
+   //pseudotop construction-------------------------------------------------------------- 
 
+   //keep track of  to number of candiate pseudotops
+nCandidateEvent++;
 
     //check if reuiremements are met ( size of bjets, size of lightjets, size of all jets, MET )
-  if (! jetcuts->SelectedEvent(2, 2, 4,30.0)) 
-  {
+if (! jetcuts->SelectedEvent(2, 2, 4)) 
+{
       //keep track of number of selected vs total applicable jets
-    nSelectedevents++;
-    continue;
-  }
+  nSelectedevents++;
+  continue;
+}
 
 
-  if( debug && iEv < 20)
-  {
-    cout<<"Bjets are: "<<endl;
-    PrintPseudojets(btags);
-    cout<<" Lightjets: \n ";
-    PrintPseudojets(lightjets);
-  }
+if( debug && iEv < 20)
+{
+  cout<<"Bjets are: "<<endl;
+  PrintPseudojets(btags);
+  cout<<" Lightjets: \n ";
+  PrintPseudojets(lightjets);
+}
 
     //call function that returns the pseudojet of the leptonic pseudotop
     //We send in bjet, non-bjets, nutrinos, muons, and electrons 
-  fastjet::PseudoJet leptonpseudotop = reconstruction->Recon_Mass_Method_1(btags, lightjets, 
-   data.leptons.nutrinos, data.leptons.muons,data.leptons.electrons );
+fastjet::PseudoJet leptonpseudotop = reconstruction->Recon_Mass_Method_1(btags, lightjets, 
+                                                                         data.leptons.nutrinos, data.leptons.muons,data.leptons.electrons );
 
 
     //W:s
-  whad->Fill(           reconstruction->Returnhadronicw());
-  wlep->Fill(           reconstruction->Returnleptonicw() );
-  bestbtop->Fill(       reconstruction->Returnbestbtop() );
-  withhad ->Fill(       reconstruction->Returnlastbtop() );
+whad->Fill(           reconstruction->Returnhadronicw());
+wlep->Fill(           reconstruction->Returnleptonicw() );
+bestbtop->Fill(       reconstruction->Returnbestbtop() );
+withhad ->Fill(       reconstruction->Returnlastbtop() );
 
     //information about truth parton
-  top_mass->Fill(        data.partons.top[0].m() );
-  top_eta->Fill(         data.partons.top[0].eta() );
-  top_y->Fill(           data.partons.top[0].y() );
-  top_pt->Fill(          data.partons.top[0].pT() );
+top_mass->Fill(        data.partons.top[0].m() );
+top_eta->Fill(         data.partons.top[0].eta() );
+top_y->Fill(           data.partons.top[0].y() );
+top_pt->Fill(          data.partons.top[0].pT() );
 
-    //check is our pseudo lpeton top matches a tbar
 
-  vector<bool> matches = reconstruction-> TopMatch( data.partons.tops, leptonpseudotop, hadronicpseudotop) ;
-  bool tmatch = matches[0], tbarmatch=matches[1];
+  //check is our pseudo lpeton top matches a tbar
+  //std::pair<Particle,int> checkmatch = reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop );
+bool tmatch(false), tbarmatch(false);
+  //if(checkmatch.second == 6) tmatch = true;
+  //if(checkmatch.second == -6) tbarmatch = true;
+
 
 
     // keep track on the matching efficiency
     // this is a profile (TPofile) - fill with (x,y), and it will keep track
     // of the y-mean and plot it in bins of x
-  matchingEff_vs_topPt->Fill(      leptonpseudotop.pt(),  tmatch);
-  matchingEff_vs_topmass->Fill(    leptonpseudotop.m(),   tmatch);
-  matchingEff_vs_topeta->Fill(     leptonpseudotop.eta(), tmatch);
+matchingEff_vs_topPt->Fill(      leptonpseudotop.pt(),  tmatch);
+matchingEff_vs_topmass->Fill(    leptonpseudotop.m(),   tmatch);
+matchingEff_vs_topeta->Fill(     leptonpseudotop.eta(), tmatch);
 
-  matchingEff_vs_tbmass->Fill(  data.partons.antitop[0].m(), tbarmatch );
-  tbar_matching->Fill( leptonpseudotop.m(),tbarmatch );
+matchingEff_vs_tbmass->Fill(  data.partons.antitop[0].m(), tbarmatch );
+tbar_matching->Fill( leptonpseudotop.m(),tbarmatch );
 
 
     //separate histograms of matched and unmatched pseudo top
-  if(tmatch){
-    pseudo_top_match_mass->Fill(   leptonpseudotop.m()   );
-    pseudo_top_match_eta->Fill(    leptonpseudotop.eta() );
-    pseudo_top_match_pt ->Fill(    leptonpseudotop.pt()  );
-  }
-  else if(tbarmatch) {
-   pseudo_tbar_nomatch_mass->Fill(     leptonpseudotop.m());
-   pseudo_tbar_nomatch_eta->Fill(      leptonpseudotop.m());
-   pseudo_tbar_nomatch_pt->Fill(       leptonpseudotop.m());
- } 
- else 
- {
+if(tmatch)
+{
+  pseudo_top_match_mass->Fill(   leptonpseudotop.m()   );
+  pseudo_top_match_eta->Fill(    leptonpseudotop.eta() );
+  pseudo_top_match_pt ->Fill(    leptonpseudotop.pt()  );
+
+}
+else if(tbarmatch) 
+{
+ pseudo_tbar_match_mass->Fill(     leptonpseudotop.m());
+ pseudo_tbar_match_eta->Fill(      leptonpseudotop.m());
+ pseudo_tbar_match_pt->Fill(       leptonpseudotop.m());
+} 
+else 
+{
   nomatch_mass->Fill(      leptonpseudotop.m()   );
   nomatch_eta ->Fill(      leptonpseudotop.eta() );
   nomatch_pt  ->Fill(      leptonpseudotop.pt()  );
 }
-
 
   } //end of event loop
 
@@ -426,7 +444,7 @@ if (debug  && iEv < 10) {
 
   //_____________________________________________________
 
-  if(debug) cout<<" Times reached the filling of leptons: " <<munus<<endl;
+  
 
   // Statistical summary
   if(debug) pythia.stat(); 
@@ -453,10 +471,10 @@ if (debug  && iEv < 10) {
 
     for(size_t n(0); n < myjets.size(); ++n) {
       printf(" (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) : \n",
-        myjets[n].pt(),
-        myjets[n].eta(),
-        myjets[n].phi(),
-        myjets[n].m());	     
+             myjets[n].pt(),
+             myjets[n].eta(),
+             myjets[n].phi(),
+             myjets[n].m());	     
     }  
   }
 

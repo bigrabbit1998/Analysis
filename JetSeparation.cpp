@@ -2,6 +2,8 @@
 #include "MyEvent.h"
 #include "JetSeparation.h"
 using namespace std;
+ typedef vector<fastjet::PseudoJet> Pseudovector;
+ typedef vector<Pythia8::Particle> Particlevector;
 
 //default constructor
 JetMatching::JetMatching()
@@ -12,9 +14,8 @@ JetMatching::JetMatching()
 //clear information of golbal variables
 void JetMatching::Clear()
 {
-  m_size_bjets= 0;
-  m_size_lightjets =0;
-
+  m_size_of_bjets= 0;
+  m_size_of_lightjets =0;
 
 }
 
@@ -36,7 +37,7 @@ Pseudovector JetMatching::Match(const Particlevector &particles, const  Pseudove
 {
 
   //vector of matched jets and pairs
-  vector<std::pair<Pythia8::Particle, Pseudovector> > matchedpairs
+//  vector<std::pair<Pythia8::Particle, Pseudovector> > matchedpairs;
   Pseudovector matchedjets;
 
   for( size_t ijet=0 ; ijet < input_jets.size() ; ++ijet) 
@@ -62,9 +63,9 @@ Pseudovector JetMatching::Match(const Particlevector &particles, const  Pseudove
  }
 
  if(particles[0].idAbs() == 5)
-  m_size_bjets = matchedjets.size();
+  m_size_of_bjets = matchedjets.size();
 else 
-  m_size_lightjets = matchedjets.size();
+  m_size_of_lightjets = matchedjets.size();
 
 return matchedjets;
 }
@@ -72,14 +73,14 @@ return matchedjets;
 
 //we need something to check if a jet is to be used. try different eta cuts
 //this decides if the event is to be used
-bool MyTopEvent::SelectedEvent( int size_b, int size_l, int size_all )
+bool JetMatching::SelectedEvent( int size_b, int size_l, int size_all )
 {
 
-  if(m_size_bjets < size_b) return false;
+  if(m_size_of_bjets < size_b) return false;
 
-  if( m_size_lightjets < size_l) return false;
+  if( m_size_of_lightjets < size_l) return false;
 
-  if(m_size_lightjets + m_size_bjets < size_all) return false;
+  if(m_size_of_lightjets + m_size_of_bjets < size_all) return false;
 
   return true; 
 }
@@ -134,15 +135,15 @@ Pseudovector Cuts ( const Pseudovector& input_jets, double ptcuts, double etacut
     notremoved = true;
 
   if (notremoved) 
-    cutjets.push_back(jet);  
+    cut_jets.push_back(jet);  
  }
 
 
-return cutjets;
+return cut_jets;
 
 };
 
-bool JetMatching::ComparePt(fastjet::PseudoJet a, fastjet::Pseudovector b) 
+bool JetMatching::ComparePt(fastjet::PseudoJet a, fastjet::PseudoJet b) 
 {
   return a.pt() > b.pt();
 }
