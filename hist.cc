@@ -81,33 +81,34 @@ int  main(int argc, char* argv[])
   
   //truth 
   TH1F* top_mass  = new TH1F("m_top"," truth mass ; mass [GeV] ",20,130.,190.);
-  TH1F* top_pt    = new TH1F("pt_top","ttruth pT ;#it{p}_{T} [GeV];Frequency", 50, 0.  , 300.);
+  TH1F* top_pt    = new TH1F("pt_top","truth pT ;#it{p}_{T} [GeV];Frequency", 50, 0.  , 300.);
   TH1F* top_eta   = new TH1F("eta_top","truth #eta ;#eta^{top}", 20, -5., 5.);
   TH1F* top_y     = new TH1F("y_top","truth rapidity ;#it{y}^{top}", 20, -5., 5.);
 
   //not matched pseudos
-  TH1F* pseudo_tbar_match_mass  = new TH1F("pseudo_mass_tbar_matched"," unmatched leptonic pseudotop mass; mass [GeV]", 50 ,100,250.);
-  TH1F* pseudo_tbar_match_eta   = new TH1F("pseudo_eta_tbar_matched"," unmatched leptonic pseudotop eta; #eta", 50 ,-6,6.);
-  TH1F* pseudo_tbar_match_pt    = new TH1F("pseudo_pt_tbar_matched"," unmatched leptonic pseudotop pt;#it{p}_{T} [GeV]", 50 ,0,330.);
+  TH1F* pseudo_tbar_match_mass  = new TH1F("pseudo_mass_tbar_matched"," tbarmatch leptonic pseudotop mass; mass [GeV]", 50 ,130,190.);
+  TH1F* pseudo_tbar_match_eta   = new TH1F("pseudo_eta_tbar_matched"," tbarmatch leptonic pseudotop eta; #eta", 50 ,-6,6.);
+  TH1F* pseudo_tbar_match_pt    = new TH1F("pseudo_pt_tbar_matched"," tbarmatch leptonic pseudotop pt;#it{p}_{T} [GeV]", 50 ,0,300.);
 
   //matched pseudos
-  TH1F* pseudo_top_match_mass  = new TH1F("pseudo_mass_matched"," matched leptonic pseudotop; mass [GeV]", 50 ,100,250.);
-  TH1F* pseudo_top_match_pt    = new TH1F("pseudo_pt_matched",  " matched leptonic pseudotop; #it{p}_{T} [GeV]", 50 ,0,330.);
-  TH1F* pseudo_top_match_eta   = new TH1F("pseudo_eta_matched"," matched leptonic pseudotop ; #eta ", 50 ,-6,6.);
+  TH1F* pseudo_top_match_mass  = new TH1F("pseudo_mass_matched"," tmatched leptonic pseudotop; mass [GeV]", 50 ,110,200.);
+  TH1F* pseudo_top_match_pt    = new TH1F("pseudo_pt_matched",  " tmatched leptonic pseudotop; #it{p}_{T} [GeV]", 50 ,0,300.);
+  TH1F* pseudo_top_match_eta   = new TH1F("pseudo_eta_matched","  tmatched leptonic pseudotop ; #eta ", 50 ,-6,6.);
 
-  //unmatched pseudo
-  TH1F*       nomatch_mass = new TH1F("mass_unmatched"," matched leptonic pseudotop; mass [GeV]", 50 ,100,250.);
-  TH1F*       nomatch_pt   = new TH1F("pt_unmatched"," matched leptonic pseudotop; #{p}_{T} ", 50 ,0,350.);
-  TH1F*       nomatch_eta  = new TH1F("eta_unmatched"," matched leptonic pseudotop; #eta ", 50 ,-6,6);
 
   //different Bjet-W pairs
   TH1F* bestbtop      = new TH1F("pseudo_btop_mass"," best b with lep W pseudotop mass; mass [GeV]", 50 ,100,230.);
   TH1F* withhad       = new TH1F("pseudo_HW_top"," pseudotop mass using had w and best b jet; mass [GeV]", 50 ,100,230.);
-  
+
   //hadronic and leptonic Ws
   TH1F* whad = new TH1F("whadronic"," hadronic pseudo W; mass [GeV]", 20,40.,120.);
   TH1F* wlep = new TH1F("wleptonic"," leptonic pseudo w ; mass [GeV]", 20,40.,120.);
+
+  TH2F* correlation_1  = new TH2F("cores"," delata R vs mass of pseudo top; delta r; mass [GeV]", 20 ,0.,7., 20, 150., 190);
+  TH2F* correlation_3  = new TH2F("cosdres"," delata R vs mass of pseudo tbar; delta r; mass [GeV]", 20 ,0.,7., 20, 150., 190);
+  TH2F* correlation_2  = new TH2F("wrat_vs_dr"," correlations; delta R ; W_jet/Wmatched ", 20 ,0.,8., 20, -1.5, 1.5);
   
+
   //matching efficiency plots  
   TProfile*  matchingEff_vs_topPt   =  new TProfile("eff_vs_topPt"," Matching efficiency vs pT #it{p}_{T} ; p_{T} [Gev]; efficiency",50,0,300);
   TProfile*  matchingEff_vs_topmass =  new TProfile("eff_vs_topMass","Matching Efficiency vs mass_{top} ; mass [GeV]; efficieny ",20,130,190);
@@ -119,8 +120,8 @@ int  main(int argc, char* argv[])
   TProfile*  tbar_matching          =  new TProfile("eff_vs_ttbarmass", "Matching efficiency vs mass_{tbar}; mass [GeV]; efficiency", 5, 0, 20);
 
 
-
   //___________________________________________________________________________
+
 
   //argumetns that are sent in: clustering radius, matching deltaR, etc
   int nEv=atol(argv[2]);  
@@ -137,15 +138,13 @@ int  main(int argc, char* argv[])
   //things for event logging
   int nCandidateEvent=0, nSelectedevents=0;
 
-  
   // begin event loop 
-  std::pair<Pythia8::Particle, int> *checkmatch;
-  checkmatch = new std::pair<Pythia8::Particle, int>;
+  std::pair<Pythia8::Particle, double> *checkmatch = new std::pair<Pythia8::Particle, double>;
   for (int iEv = 0; iEv < nEv; ++iEv)
   { 
     Event &event = pythia.event;
 
-    //structure objets 
+    //structure objets. move these outside of loop later. 
     struct first
     {
       vector<Particle> tops;
@@ -234,10 +233,14 @@ int  main(int argc, char* argv[])
    if(! particle.isFinal()) continue;
 
       //Let's cluster particles that are not leptons from topw 
-   if ( particle.isLepton() && (m1.id()== 24 || m2.id() ==24) &&  (m3.id()==6 || m4.id()==6)) 
+   if ( particle.isLepton() && (m1.idAbs()== 24 || m2.idAbs() ==24) &&  (m3.idAbs()==6 || m4.idAbs()==6)) 
    {
 
-     skipevent2 = true;
+
+
+    if(particle.isLepton() && (m1.id() == 24 || m2.id() == 24) ) 
+      skipevent2 = true;
+
      if (skipevent1 && skipevent2) break;
 
      if(isTau( particle ) ){ skip = true; break;}
@@ -283,8 +286,8 @@ int  main(int argc, char* argv[])
  }
 
 
-
     //find w decay products-----------------------------------------------
+
 
 
     //here we look for the decay products of the W 
@@ -320,15 +323,15 @@ int  main(int argc, char* argv[])
  {
   printf("\nEvent %d:\n",iEv);
   printf("  We found %d b-quarks\n",int(data.partons.B.size()));
-  for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i);
+  for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i) );
     clustering->PrintJets(); 
-  }
+}
 
 
     //cluster particles and then do matching--------------------------------------------------
 
     //cluster particles
-  clustering->doClustering();
+clustering->doClustering();
 
 vector<fastjet::PseudoJet> all_jets = clustering->GetJets();   
 vector<fastjet::PseudoJet> btags, lightjets;
@@ -355,8 +358,7 @@ btags = jetcuts->Match(data.partons.B, all_jets);
 lightjets= jetcuts->RemoveSubset(btags, all_jets);
 
 
-
-   //pseudotop construction-------------------------------------------------------------- 
+  //pseudotop construction-------------------------------------------------------------- 
 
 
    //keep track of  to number of candiate pseudotops
@@ -371,6 +373,7 @@ if (! jetcuts->SelectedEvent(2, 2, 4))
 }
 
 
+
 if( debug && iEv < 20)
 {
   cout<<"Bjets are: "<<endl;
@@ -379,10 +382,32 @@ if( debug && iEv < 20)
   PrintPseudojets(lightjets);
 }
 
+  //get w to find scalling factor 
+std::pair<Pythia8::Particle, double> W_jj;
+
+fastjet::PseudoJet tempw = reconstruction->Return_W4vec();
+reconstruction->TopsMatch_Closest(data.partons.W, tempw , &W_jj);
+
+
     //call function that returns the pseudojet of the leptonic pseudotop
     //We send in bjet, non-bjets, nutrinos, muons, and electrons 
 fastjet::PseudoJet leptonpseudotop = reconstruction->Recon_Mass_Method_1(btags, lightjets, 
+ 
                                                                          data.leptons.nutrinos, data.leptons.muons,data.leptons.electrons );
+  //check is our pseudo lpeton top matches a tbar
+  //std::pair<Particle,int> checkmatch = reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop );
+bool tmatch(false), tbarmatch(false);
+  //  std::pair<Pythia8::Particle, int> *checkmatch;
+reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop, checkmatch);
+if(checkmatch->first.id() == 6) tmatch = true;
+if(checkmatch->first.id() == -6) tbarmatch = true;
+
+  double tempass= reconstruction->Returnleptonicw() ; 
+  double m_w_jj = checkmatch->first.m();
+  double wjj_w = tempass/ m_w_jj;
+  correlation_1->Fill(checkmatch->second, leptonpseudotop.m() );
+  correlation_2->Fill(checkmatch->second, wjj_w );
+
 
 
     //W:s
@@ -396,17 +421,6 @@ top_mass->Fill(        data.partons.top[0].m() );
 top_eta->Fill(         data.partons.top[0].eta() );
 top_y->Fill(           data.partons.top[0].y() );
 top_pt->Fill(          data.partons.top[0].pT() );
-
-
-  //check is our pseudo lpeton top matches a tbar
-  //std::pair<Particle,int> checkmatch = reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop );
-bool tmatch(false), tbarmatch(false);
-  //  std::pair<Pythia8::Particle, int> *checkmatch;
-reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop, checkmatch);
-if(checkmatch->second == 6) tmatch = true;
-if(checkmatch->second == -6) tbarmatch = true;
-
-
 
     // keep track on the matching efficiency
     // this is a profile (TPofile) - fill with (x,y), and it will keep track
@@ -433,12 +447,7 @@ else if(tbarmatch)
  pseudo_tbar_match_eta->Fill(      leptonpseudotop.m());
  pseudo_tbar_match_pt->Fill(       leptonpseudotop.m());
 } 
-else 
-{
-  nomatch_mass->Fill(      leptonpseudotop.m()   );
-  nomatch_eta ->Fill(      leptonpseudotop.eta() );
-  nomatch_pt  ->Fill(      leptonpseudotop.pt()  );
-}
+
 
   } //end of event loop
 

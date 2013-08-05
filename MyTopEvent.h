@@ -31,7 +31,7 @@ public:
 
 	double Return_DR( Pythia8::Particle & , fastjet::PseudoJet &);
 
-	void TopsMatch_Closest( myparticlejets & , fastjet::PseudoJet & , std::pair<Pythia8::Particle, int> *);
+	void TopsMatch_Closest( myparticlejets & , fastjet::PseudoJet & , std::pair<Pythia8::Particle, double> *);
 
 	double Returnhadronicw();
 	double Returnleptonicw();
@@ -49,6 +49,7 @@ public:
 	Pythia8::Vec4 ConvertToVec4(const fastjet::PseudoJet& );
 
 	fastjet::PseudoJet LeptonicW(const myparticlejets &, const myparticlejets& , const myparticlejets&) ;
+	fastjet::PseudoJet Return_W4vec();
 
 private:
 	mypseudojets m_tops, m_bjets, m_lightjets, m_extra, m_tbars;
@@ -56,7 +57,8 @@ private:
 
 	//mass of particles/pseudojets
 	double m_mass, m_masswlep, m_masswhad, m_massbestb, m_lastbtop;
-	static const double m_topmass = 172.50;
+	static const double m_topmass = 172.50, m_true_w = 80.5; 
+	fastjet::PseudoJet m_leptonw;
 
 	void fatal(TString msg) { printf("ERROR:\n\n  %s\n\n",msg.Data()); abort(); }
 

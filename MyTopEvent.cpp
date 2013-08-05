@@ -33,11 +33,10 @@ double MyTopEvent::Return_DR( Pythia8::Particle & in_particle, fastjet::PseudoJe
 
 
   void MyTopEvent::TopsMatch_Closest( myparticlejets & partons, fastjet::PseudoJet & pseudotop, 
-                                                                   pair<Pythia8::Particle, int> * booger)
+                                                                   std::pair<Pythia8::Particle, double> * booger)
 {
   double temp_del( 99999);
   int position(0);
-  vector<bool> boolvector;
   for(size_t i(0) ; i < partons.size(); ++i)
   {
     Pythia8::Particle &parton_i = partons[i];
@@ -52,7 +51,7 @@ double MyTopEvent::Return_DR( Pythia8::Particle & in_particle, fastjet::PseudoJe
   }
 
   booger->first  = partons[position];
-  booger->second = partons[position].id();
+  booger->second = temp_del;
 
 }
 
@@ -81,14 +80,16 @@ fastjet::PseudoJet MyTopEvent::Recon_Mass_Method_1( mypseudojets & Bjets, mypseu
   }
 
 
-
   fastjet::PseudoJet hadronictop= operator+(Bjets[bestcombos],hadronicw);
 
     //make call to create leptonic W
   fastjet::PseudoJet leptonicVV = LeptonicW(nu, mu, els);
+  m_leptonw = leptonicVV;
+
+  //
 
     //create leptonic pseudow
-  fastjet::PseudoJet lighttop = operator+(remainingbjet[0], leptonicVV);
+  fastjet::PseudoJet lighttop  = operator+(remainingbjet[0], leptonicVV);
   fastjet::PseudoJet bestb_top = operator+(Bjets[bestcombos], leptonicVV);
 
     //these contain the mass of different tops and w:s
@@ -113,6 +114,7 @@ fastjet::PseudoJet MyTopEvent::Recon_Mass_Method_1( mypseudojets & Bjets, mypseu
   double MyTopEvent::Returnleptonicw(){ return m_masswlep;}
   double MyTopEvent::Returnbestbtop() { return m_massbestb; }
   double MyTopEvent::Returnlastbtop() { return m_lastbtop;}
+  fastjet::PseudoJet MyTopEvent::Return_W4vec() { return m_leptonw;}
 
 
   // Given one lepton and one neutrino
