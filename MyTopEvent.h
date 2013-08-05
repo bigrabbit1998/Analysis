@@ -31,7 +31,7 @@ public:
 
 	double Return_DR( Pythia8::Particle & , fastjet::PseudoJet &);
 
-	int TopsMatch_Closest( myparticlejets & , fastjet::PseudoJet & );
+	void TopsMatch_Closest( myparticlejets & , fastjet::PseudoJet & , std::pair<Pythia8::Particle, int> *);
 
 	double Returnhadronicw();
 	double Returnleptonicw();

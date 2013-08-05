@@ -42,7 +42,7 @@ class JetMatching{
   Pseudovector Cuts(const Pseudovector&, double ptcut, double etacut );
 
   //matched a set of particle sot Pseudovector
-  Pseudovector Match(const Particlevector&,const Pseudovector&);
+  Pseudovector Match(const Particlevector &,const Pseudovector&);
 
   //this removes selected jets from 
   Pseudovector RemoveSubset(const Pseudovector &,const Pseudovector& );

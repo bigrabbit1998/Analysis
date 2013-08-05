@@ -25,10 +25,10 @@ bool isMu(const Particle &ptcl) { return ptcl.idAbs()==13;}
 bool isNu(const Particle &ptcl) { return ptcl.idAbs()==12 || ptcl.idAbs()==14 || ptcl.idAbs()==16; }
 void fatal(TString msg) { printf("ERROR:\n\n  %s\n\n",msg.Data()); abort(); }
 void PrintPtcl(const Particle &ptcl, TString comment="")
- {
+{
   printf("  (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) pdgID %4d : %s\n",
          ptcl.pT(),ptcl.eta(),ptcl.phi(),ptcl.m(),ptcl.id(),comment.Data());
-  } 
+} 
 void PrintPseudojets( const vector<fastjet::PseudoJet> &);
 
 //main function
@@ -120,7 +120,6 @@ int  main(int argc, char* argv[])
 
 
 
-  
   //___________________________________________________________________________
 
   //argumetns that are sent in: clustering radius, matching deltaR, etc
@@ -140,6 +139,8 @@ int  main(int argc, char* argv[])
 
   
   // begin event loop 
+  std::pair<Pythia8::Particle, int> *checkmatch;
+  checkmatch = new std::pair<Pythia8::Particle, int>;
   for (int iEv = 0; iEv < nEv; ++iEv)
   { 
     Event &event = pythia.event;
@@ -176,7 +177,7 @@ int  main(int argc, char* argv[])
 
     //reset objects    
     clustering->ClearJets();
-    reconstruction->Clear();
+    reconstruction->Clear(); 
     
     if (!pythia.next()) continue;//generate events.skip if necessary
     if (debug && iEv==0) {pythia.info.list(); pythia.event.list();} 
@@ -288,10 +289,10 @@ int  main(int argc, char* argv[])
 
     //here we look for the decay products of the W 
     //and  check the decay channels
-std::pair <int,int> daughters;
-for ( size_t itop=0; itop < data.partons.tops.size(); ++itop)
-{
-  const    Particle& top = data.partons.tops[itop];
+ std::pair <int,int> daughters;
+ for ( size_t itop=0; itop < data.partons.tops.size(); ++itop)
+ {
+  const Particle &top = data.partons.tops[itop];
 
       // We have a top! it should go to a W and a b (most of the time)
   int W_index = top.daughter1(), b_index = top.daughter2();
@@ -311,24 +312,23 @@ for ( size_t itop=0; itop < data.partons.tops.size(); ++itop)
   if(debug) {
    TString tup = top.id()==6 ? " top" : " tbar";
    cout <<"daughters of"<<tup<< " are: "<<event[W_index].id() <<" and  " <<event[b_index].id()<<"\n"<<endl;  }
- 
 
-} 
 
-if (debug  && iEv < 10)
-{
+ } 
+
+ if (debug  && iEv < 10)
+ {
   printf("\nEvent %d:\n",iEv);
   printf("  We found %d b-quarks\n",int(data.partons.B.size()));
-  for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i));
+  for (size_t i=0;i < data.partons.B.size();++i) PrintPtcl(data.partons.B[i],Form("b-quark %d",i);
     clustering->PrintJets(); 
-}
+  }
 
 
     //cluster particles and then do matching--------------------------------------------------
 
-
     //cluster particles
-clustering->doClustering();
+  clustering->doClustering();
 
 vector<fastjet::PseudoJet> all_jets = clustering->GetJets();   
 vector<fastjet::PseudoJet> btags, lightjets;
@@ -357,6 +357,7 @@ lightjets= jetcuts->RemoveSubset(btags, all_jets);
 
 
    //pseudotop construction-------------------------------------------------------------- 
+
 
    //keep track of  to number of candiate pseudotops
 nCandidateEvent++;
@@ -400,8 +401,10 @@ top_pt->Fill(          data.partons.top[0].pT() );
   //check is our pseudo lpeton top matches a tbar
   //std::pair<Particle,int> checkmatch = reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop );
 bool tmatch(false), tbarmatch(false);
-  //if(checkmatch.second == 6) tmatch = true;
-  //if(checkmatch.second == -6) tbarmatch = true;
+  //  std::pair<Pythia8::Particle, int> *checkmatch;
+reconstruction->TopsMatch_Closest(data.partons.tops, leptonpseudotop, checkmatch);
+if(checkmatch->second == 6) tmatch = true;
+if(checkmatch->second == -6) tbarmatch = true;
 
 
 

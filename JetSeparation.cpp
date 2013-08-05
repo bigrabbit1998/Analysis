@@ -37,7 +37,7 @@ Pseudovector JetMatching::Match(const Particlevector &particles, const  Pseudove
 {
 
   //vector of matched jets and pairs
-//  vector<std::pair<Pythia8::Particle, Pseudovector> > matchedpairs;
+  //vector<std::pair<Pythia8::Particle, Pseudovector> > matchedpairs;
   Pseudovector matchedjets;
 
   for( size_t ijet=0 ; ijet < input_jets.size() ; ++ijet) 

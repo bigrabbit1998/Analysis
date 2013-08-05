@@ -4,8 +4,8 @@
   #include "JetSeparation.h"
   //#include "PartonTop.h"
 
-  //typedef vector<fastjet::PseudoJet> mypseudojets;
-  //typedef vector<Pythia8::Particle> myparticlejets;
+  typedef vector<fastjet::PseudoJet> mypseudojets;
+  typedef vector<Pythia8::Particle> myparticlejets;
 
   //constructor 
 MyTopEvent::MyTopEvent()
@@ -20,7 +20,7 @@ void MyTopEvent::Clear()
 }
 
 
-double Return_DR( Pythia8::Particle & in_particle, fastjet::PseudoJet &in_pseudotop)
+double MyTopEvent::Return_DR( Pythia8::Particle & in_particle, fastjet::PseudoJet &in_pseudotop)
 {
   double DR(0);
   
@@ -32,7 +32,8 @@ double Return_DR( Pythia8::Particle & in_particle, fastjet::PseudoJet &in_pseudo
 }
 
 
-std::pair<Pythia8::Particle, int> TopsMatch_Closest( myparticlejets & partons, fastjet::PseudoJet & pseudotop)
+  void MyTopEvent::TopsMatch_Closest( myparticlejets & partons, fastjet::PseudoJet & pseudotop, 
+                                                                   pair<Pythia8::Particle, int> * booger)
 {
   double temp_del( 99999);
   int position(0);
@@ -50,8 +51,8 @@ std::pair<Pythia8::Particle, int> TopsMatch_Closest( myparticlejets & partons, f
 
   }
 
-  std:pair<Pythia8::Particle, int> cloose (partons[position],partons[position].id());
-  return cloose;
+  booger->first  = partons[position];
+  booger->second = partons[position].id();
 
 }
 
