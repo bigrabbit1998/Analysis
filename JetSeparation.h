@@ -14,25 +14,23 @@ class JetMatching{
   
   //constructor
   JetMatching();
+  void Clear();
   
-  
-  /*Jets(void);
-  Jets(const Jets &src);
-  void operator=(const Jets &src);
-  */
 
   //this removes Pseudovector that are close to input particles
   Pseudovector OverlapRemoval(const Particlevector&,const Pseudovector&);
   
 
+  //check for event requirements
   bool SelectedEvent(int,int, int);
 
-  // matching parameters
-  void SetParam( double,double,double);
 
-  void Clear();
-  
-  //matching is done here
+  //delta r
+  double Return_DR( Pythia8::Particle &, Pythia8::Particle &);
+  double Return_DR( fastjet::PseudoJet &, fastjet::PseudoJet &);
+
+  // matching is done here
+  void SetParam( double,double,double);  
   void PrintMatches();
   bool ComparePt(fastjet::PseudoJet, fastjet::PseudoJet );
   bool ChiSquare(TLorentzVector, TLorentzVector );
