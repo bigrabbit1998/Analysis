@@ -3,6 +3,7 @@
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/ClusterSequence.hh"
 
+
 fjClustering::fjClustering()
 {
   std::cout<<" fjClustering called with default parameters "<<std::endl;
@@ -29,6 +30,7 @@ fjClustering::~fjClustering()
   outputJets.clear();
  }
 
+//we now clear the vector of jets
 void fjClustering::ClearJets()
 {
   outputJets.clear();
@@ -37,6 +39,7 @@ void fjClustering::ClearJets()
   //inputJets.resize(1, 0);
  }
 
+//this function will print the current jets that have been clustered
 void fjClustering::PrintJets()
 {
   
@@ -52,10 +55,12 @@ void fjClustering::PrintJets()
   }
  }
 
+//This is a function to compare the pT of two jets
 bool ComparePt(fastjet::PseudoJet a, fastjet::PseudoJet b) {
   return a.pt() > b.pt();
 }
 
+//this does the clustering
 void fjClustering::doClustering()
 {
   
@@ -66,20 +71,10 @@ void fjClustering::doClustering()
   
 }
 
-/*void fjClustering::push_back(double px, double py, double pz, double E)
-{
- //
-  //fastjet::PseudoJet *jet= new fastjet::PseudoJet(px,py,pz,E);
-  //inputJets.push_back(jet);
-  inputJets.push_back(fastjet::PseudoJet(px,py,pz,E));
-
-  }*/
-
-void fjClustering::push_back(const Pythia8::Particle &part)
+void fjClustering::push_back(const Pythia8::Particle &part, int pid)
 {
   //fastjet::PseudoJet *jet= new fastjet::PseudoJet(px,py,pz,E);
   //inputJets.push_back(jet);
-  int pid=part.id();
   fastjet::PseudoJet *myjet2 = new fastjet::PseudoJet(part.px(),part.py(),part.pz(),part.e());
   fastjet::PseudoJet myjet3 = *myjet2; 
   myjet3.set_user_index (pid);  
@@ -91,3 +86,9 @@ void fjClustering::push_back(const Pythia8::Particle &part)
 
 }
 
+void fjClustering::push_back(const Pythia8::Particle &part)
+{
+  int pid=part.id();
+  push_back(part,pid);
+    
+}

@@ -23,8 +23,9 @@ void MyTopEvent::Clear()
   m_masswhad =0;
   m_massbestb = 0;
   m_lastbtop=0;
-
+ 
 }
+
 
 //this returns the delta r of a particle to a pseudojet
 double MyTopEvent::Return_DR( Pythia8::Particle & a, fastjet::PseudoJet & b)
@@ -33,6 +34,7 @@ double MyTopEvent::Return_DR( Pythia8::Particle & a, fastjet::PseudoJet & b)
   DR = sqrt(  pow((a.eta() +- b.eta()),2) +  pow((a.phi() - b.phi() ),2)  );
   return DR;
 }
+
 
 //this returns the closest partons
 void MyTopEvent::Closest_Match( myparticlejets & partons, fastjet::PseudoJet & pseudotop, 
@@ -102,7 +104,10 @@ fastjet::PseudoJet MyTopEvent::Recon_Mass_Method_1( mypseudojets & Bjets, mypseu
  m_masswlep = leptonicVV.m();
  m_masswhad =hadronicw.m();
  m_lastbtop = hadronictop.m();
-  // return heavytop;
+
+ m_pair.first = remainingbjet[0];
+ m_pair.second = leptonicVV ;
+
 
  return lighttop;
   //  return leptonicVV;
@@ -145,7 +150,6 @@ fastjet::PseudoJet MyTopEvent::Recon_Mass_Method_2(const mypseudojets & Bjets, c
   //here we do the choosing of the pseudojets
   for( size_t i(0); i < m_tvectors.size(); ++i)
   {
-
     for(size_t m(0) ; m < Bjets.size(); ++m)
     {
      one = operator+(m_tvectors[i], Bjets[m]);
@@ -153,13 +157,18 @@ fastjet::PseudoJet MyTopEvent::Recon_Mass_Method_2(const mypseudojets & Bjets, c
      {
        two = operator+(one, leptons[n]);
        mass = two.m();
-       tempdif = fabs(mass - m_topmass ) ;
+       //eta = two.eta();
+       //pt = two.pt();
 
+       //deta = 
+       tempdif = fabs(mass - m_topmass ) ;
+       //dpt = fabs( )
        if(tempdif < dif ){dif = tempdif; final = two; position_lep = n; position_nu = i; position_b = m; }
      } 
    }
 
  }
+
  fastjet::PseudoJet lepw = operator+( leptons[position_lep], m_tvectors[position_nu] );
  fastjet::PseudoJet bjet = Bjets[position_b];
  std::pair< fastjet::PseudoJet, fastjet::PseudoJet> sendback (bjet, lepw);
@@ -261,11 +270,11 @@ fastjet::PseudoJet MyTopEvent::LeptonicW(const myparticlejets & nutrino, const m
     pwz = lepton.pz() + n_z,   
     pwE = sqrt(M_W2 + pwx*pwx + pwy*pwy + pwz*pwz);
 
-    
-    tempmass = sqrt(pwE*pwE - pwx*pwx - pwy*pwy - pwz*pwz );
+    diff = n_z;
+    //tempmass = sqrt(pwE*pwE - pwx*pwx - pwy*pwy - pwz*pwz );
     
     //use the matched eta here
-    tempdif = fabs(M_W - tempmass); 
+    //tempdif = fabs(M_W - tempmass); 
     
     //get the pz that minimizes the diff in eta and mass
     if(tempdif < diff)

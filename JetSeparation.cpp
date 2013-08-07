@@ -20,20 +20,26 @@ void JetMatching::Clear()
 }
 
 //this function will return the delta r of two jets or two vectors
-double JetMatching::Return_DR( Pythia8::Particle & a, Pythia8::Particle & b)
+double JetMatching::Return_DR( const Pythia8::Particle & a, const Pythia8::Particle & b)
 {
   double DR(0);
   DR = sqrt( pow((a.eta() - b.eta()), 2) + pow((a.phi() - b.phi()), 2 )  );
   return DR;
 }
 
-double JetMatching::Return_DR( fastjet::PseudoJet & c, fastjet::PseudoJet & d)
+double JetMatching::Return_DR(const fastjet::PseudoJet & c,const fastjet::PseudoJet & d)
 {
   double DR(0);
   DR = sqrt( pow( (c.eta() - d.eta()), 2) + pow( (c.phi() - d.phi()), 2 )  );
   return DR;
 }
 
+double JetMatching::Return_DR( const Pythia8::Particle & c,const fastjet::PseudoJet & d)
+{
+  double DR(0);
+  DR = sqrt( pow( (c.eta() - d.eta()), 2) + pow( (c.phi() - d.phi()), 2 )  );
+  return DR;
+}
 
 //this sets the parameters for the matching
 void JetMatching::SetParam(double DeltaR , double etamax, double ptmin) 
@@ -195,3 +201,54 @@ vector<fastjet::PseudoJet> JetMatching::RemoveSubset(const vector<fastjet::Pseud
  m_size_of_lightjets = newset.size();
  return newset;
 }
+
+//this will be not be needed later
+void JetMatching::RemoveSubset(const Pseudovector& subset,const Pseudovector& set, Pseudovector *newset) 
+{
+  for( size_t n(0); n < set.size(); ++n) 
+  {
+    const fastjet::PseudoJet  &s = set[n];
+
+    for(size_t m(0); m < subset.size(); ++m)
+    {
+     const fastjet::PseudoJet &ss= subset[m];
+
+     if(operator==(s,ss)) break;
+     else if(m==(int(subset.size())-1))
+       newset->push_back(s);
+   }
+ }
+
+ m_size_of_lightjets = newset->size();
+ 
+}
+
+
+//does matching
+void JetMatching::Match(const Particlevector &particles, const  Pseudovector &input_jets, Pseudovector *matchedjets ) 
+{
+
+  //std::pair<pseudovector, particlevector> paired;
+  for( size_t ijet=0 ; ijet < input_jets.size() ; ++ijet) 
+  {
+    const fastjet::PseudoJet &nth_jet = input_jets[ijet];
+    bool match_j=false;
+
+    for( size_t ith_p(0) ; ith_p < particles.size(); ++ith_p )
+    {
+
+      const Pythia8::Particle &pe = particles[ith_p];
+     
+     if( pe.pT() > m_ptmin && fabs(pe.eta() < m_etamax) && ( Return_DR(pe, nth_jet) < m_DeltaR ) )
+       match_j=true;  
+   }
+
+   if(match_j)
+     matchedjets->push_back(nth_jet);  
+ }
+
+ if(particles[0].idAbs() == 5)
+  m_size_of_bjets = matchedjets->size();
+
+}
+

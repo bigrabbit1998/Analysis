@@ -26,8 +26,9 @@ class JetMatching{
 
 
   //delta r
-  double Return_DR( Pythia8::Particle &, Pythia8::Particle &);
-  double Return_DR( fastjet::PseudoJet &, fastjet::PseudoJet &);
+  double Return_DR(const Pythia8::Particle &,  const Pythia8::Particle &);
+  double Return_DR(const fastjet::PseudoJet &, const fastjet::PseudoJet &);
+  double Return_DR(const Pythia8::Particle &,  const fastjet::PseudoJet &);
 
   // matching is done here
   void SetParam( double,double,double);  
@@ -41,9 +42,13 @@ class JetMatching{
 
   //matched a set of particle sot Pseudovector
   Pseudovector Match(const Particlevector &,const Pseudovector&);
+  void Match(const Particlevector &particles, const  Pseudovector &input_jets, Pseudovector *matchedpairs );
 
   //this removes selected jets from 
   Pseudovector RemoveSubset(const Pseudovector &,const Pseudovector& );
+
+
+  void RemoveSubset(const Pseudovector& subset,const Pseudovector& set, Pseudovector *newset);
 
 
 

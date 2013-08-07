@@ -10,6 +10,7 @@
 #include<vector>
 #include <cstdio>
 #include "Pythia.h"
+
 class fjClustering
 {
 
@@ -23,16 +24,16 @@ class fjClustering
   void PrintJets();
   void doClustering();
   // void push_back(double px, double py, double pz, double E);
+  void push_back(const Pythia8::Particle &part, int );
   void push_back(const Pythia8::Particle &part);
 
-  std::vector<fastjet::PseudoJet> GetJets() {return outputJets;};
+  std::vector<fastjet::PseudoJet> *GetJets() { return &outputJets;};
 
  private:
   
   std::vector<fastjet::PseudoJet> inputJets;
   std::vector<fastjet::PseudoJet> outputJets;
 
-  
   fastjet::JetAlgorithm fjAlgorithm;
   fastjet::JetDefinition fjJetDefinition;
   double rParameter;

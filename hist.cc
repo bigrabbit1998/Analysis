@@ -110,9 +110,9 @@ int  main(int argc, char* argv[])
 	TH1D* wparton_pt = new TH1D("whadrosdfnic"," true lep W pt ;   pt [GeV]", 20,0.,250.);
 	TH1D* wparton_eta = new TH1D("whadsc"," true lep W eta ; mass [GeV]", 20,-6.,6.);
 
-	TH2D* dr_vs_pseudomass   = new TH2D("cores"," delata R vs mass of pseudo top; delta r; mass [GeV]", 20 , 130, 190., 20, 0., .7);
-	TH2D* dr_vs_wlep_mass    = new TH2D("cosdres"," mass of w vs mass of pseudo W ; delta r; mass [GeV]", 5 ,30,100 , 20, 0., .7);
-	TH2D* drpartons_vs_drpseudos = new TH2D("deltarspseudo"," delR partons vs delaR pseudo; del_pseudos; del_partons  ", 100, 0., 7 , 50 , 0., 7. );
+	TH2D* dr_vs_pseudomass   = new TH2D("cores"," delata R vs mass of pseudo top; mass [GeV]; delta_R", 100 , 130, 190., 20, 0., .7);
+	TH2D* dr_vs_wlep_mass    = new TH2D("cosdres"," mass of w vs mass of pseudo W ;mass [GeV]; delta_R", 100 ,50, 90 , 50, 0., .7);
+	TH2D* drpartons_vs_drpseudos = new TH2D("deltarspseudo"," Delta_R ; del_recon; del_partons ", 100, 0., 7 , 50 , 0., 7. );
 
   //matching efficiency plots  
 	TProfile*  matchingEff_vs_topPt   =  new TProfile("eff_vs_topPt"," Matching efficiency vs pT #it{p}_{T} ; p_{T} [Gev]; efficiency",50,0,300);
@@ -122,11 +122,12 @@ int  main(int argc, char* argv[])
 
 
   //3D matching plots 
-	TH3D* deltas = new TH3D("deltars"," delR ratios; del_ratio ; del_partons; del_pseudos ", 10, 0., 1. , 100 , 140, 190. , 100, 30, 110.);
+	TH3D* deltas = new TH3D("deltars"," delR ratios; del_ratio ; del_partons; del_pseudos ", 10, 0., .6 , 100 , 140, 190. , 100, 60, 90.);
 
 
 
   //___________________________________________________________________________
+
 
 
 
@@ -165,7 +166,6 @@ int  main(int argc, char* argv[])
 			vector<Particle> W;
 			vector<Particle> Wplus;
 			vector<Particle> Wminus;
-			vector<pair<Particle, Particle> > topdaughters;
 		};
 
 		struct second
@@ -188,6 +188,8 @@ int  main(int argc, char* argv[])
 		reconstruction->Clear(); 
 		jetcuts->Clear();
 
+		if(debug) cout<<"clear objects reached\n"<<endl;
+
       if (!pythia.next()) continue;//generate events.skip if necessary
       if (debug && iEv==0) {pythia.info.list(); pythia.event.list();} 
       
@@ -197,7 +199,7 @@ int  main(int argc, char* argv[])
       // storage for neutrinos, leptons, and _all_ final particles (parton or hadron level particles depending on mode)
       vector<Particle>  all_stbl_ptcls, MET; 
 
-
+      if(debug) cout<<"break pie \n "<<endl;
       
       //stable/final particles--------------------------------------------------------
 
@@ -211,18 +213,23 @@ int  main(int argc, char* argv[])
       	const Particle &m2 = event[particle.mother2()];
       	const Particle &m3 = event[m1.mother1()];
       	const Particle &m4 = event[m2.mother2()];
+      	
 
 
-	  //skip dilepton event
-      	if ( particle.isLepton() && (m1.id() == -24 || m2.id() == -24) &&  ( m3.id() == -6 || m4.id()== -6) )
+      	//check for dileptonic event and skip
+      	if ( particle.isLepton() && (m1.idAbs() == 24 || m2.idAbs() == 24) &&  ( m3.idAbs() == 6 || m4.idAbs()== 6) )
       	{
-      		skipevent1 = true; 
-      		break;  
+      		if(m3.id() == 6 || m4.id() == 6 )
+      			skipevent1 = true; 
+      		if(m3.id() == -6 || m4.id() == -6)
+      			skipevent2 = true;
       	} 
+
+      	if (skipevent1 && skipevent2) break;
+
 
       	if( fabs(particle.eta()) < 4.5 ) 
       		MET.push_back(particle);
-
 
 	  //find tops
       	if(particle.idAbs() == 6   &&  particle.daughter1()!= particle.daughter2()  &&  ( particle.daughter1()!=6 || particle.daughter2() != 6 ) ) 
@@ -238,21 +245,16 @@ int  main(int argc, char* argv[])
       	}
 
 
-      	if (isBhadron(particle.id())) 
-      		stble_Bhadrons.push_back(particle);    
-
 	  //final particles
       	if(! particle.isFinal()) continue;
 
-	  //Let's cluster particles that are not leptons from topw 
-      	if ( particle.isLepton() && (m1.id()== 24 || m2.id() ==24) &&  (m3.id()==6 || m4.id()==6)) 
+      	//Let's get the stable Bhadrons. 
+      	if (isBhadron(particle.id())) 
+      		stble_Bhadrons.push_back(particle);    
+
+	  //Let's get the particles used for reconstruction
+      	if ( particle.isLepton() && (m1.idAbs() == 24 || m2.idAbs() == 24) &&  (m3.idAbs() == 6 || m4.idAbs() == 6)) 
       	{
-
-      		if(particle.isLepton()) 
-      			skipevent2 = true;
-
-      		if (skipevent1 && skipevent2) break;
-
       		if(isTau( particle ) ) { skip = true; break;}
 
       		if( isNu(particle))
@@ -266,14 +268,13 @@ int  main(int argc, char* argv[])
       		continue;
       	}
 
-
-	  //final particle are stored in the jetcluster object for clustering later
-      	//if(particle.eta() > 2.0 )
+	  //final particle are stored in the jetcluster object for clustering 
       	clustering->push_back(particle);
       }
 
+      if(debug) cout<<"break pizza \n"<<endl;
 
-      //skip if all hadronic decay or tau from wplus
+      //skip if dileptonic decay or tau from top's w
       if( skipevent1 && skipevent2 ){ cout<<"dileptonic decay from t-tbar \n "<<endl;  continue; }
       if( skip ){ cout<<"we found a tau!\n "<<endl; continue;} 
 
@@ -329,6 +330,7 @@ int  main(int argc, char* argv[])
 
       } 
 
+
       if (debug  && iEv < 10)
       {
       	printf("\nEvent %d:\n",iEv);
@@ -338,14 +340,18 @@ int  main(int argc, char* argv[])
       }
 
 
+
+
       //cluster particles and then do matching--------------------------------------------------
+
+
 
 
       //cluster particles
       clustering->doClustering();
 
-      vector<fastjet::PseudoJet> all_jets = clustering->GetJets();   
-      vector<fastjet::PseudoJet> btags, lightjets;
+      vector<fastjet::PseudoJet> all_jets = *(clustering->GetJets() );   
+      vector<fastjet::PseudoJet> btagjets, lightjets;
 
 
       bool skipoverlapremoval = true;
@@ -362,8 +368,8 @@ int  main(int argc, char* argv[])
 
       step_2: 
       jetcuts->SetParam(.4, 2.4, 10.0); 
-      btags = jetcuts->Match(data.partons.B, all_jets);
-      lightjets= jetcuts->RemoveSubset(btags, all_jets);
+      jetcuts->Match(data.partons.B, all_jets, &btagjets);
+      jetcuts->RemoveSubset(btagjets, all_jets, &lightjets);
 
 
 
@@ -371,13 +377,15 @@ int  main(int argc, char* argv[])
 
 
 
+
       //keep track of  to number of candiate pseudotops
       nCandidateEvent++;
+
       if(debug) cout<<"almost there!"<<endl;
+
       //check if reuiremements are met ( size of bjets, size of lightjets, size of all jets, MET )
       if (! jetcuts->SelectedEvent(2, 2, 4)) 
       {
-	  //keep track of number of selected vs total applicable jets
       	nSelectedevents++;
       	continue;
       }
@@ -386,24 +394,28 @@ int  main(int argc, char* argv[])
       if( debug && iEv < 20)
       {
       	cout<<"Bjets are: "<<endl;
-      	PrintPseudojets(btags);
+      	PrintPseudojets(btagjets);
       	cout<<" Lightjets: \n ";
       	PrintPseudojets(lightjets);
       }
 
 
+
       //call function that returns the pseudojet of the leptonic pseudotop
       //We send in bjet, non-bjets, nutrinos, muons, and electrons 
-      fastjet::PseudoJet leptonpseudotop = reconstruction->Recon_Mass_Method_2(btags, lightjets,  
+      fastjet::PseudoJet leptonpseudotop = reconstruction->Recon_Mass_Method_1(btagjets, lightjets,  
                                                                                data.leptons.neutrinos, data.leptons.muons,data.leptons.electrons );
 
       //check is our pseudo lpeton top matches a tbar
       bool tmatch(false), tbarmatch(false);
+      
       if(debug) cout<<"nearly there"<<endl;
+      
       reconstruction->Closest_Match(data.partons.tops, leptonpseudotop, checkmatch);
       if(checkmatch->first.id() == 6 && checkmatch->second < .6) tmatch = true;
       if(checkmatch->first.id() == -6 && checkmatch->second < .6) tbarmatch = true;
 
+      
       //get w to find scalling factor 
       std::pair<Pythia8::Particle, double> W_jj;
       fastjet::PseudoJet tempw = reconstruction->Return_W4vec();
@@ -412,43 +424,40 @@ int  main(int argc, char* argv[])
       double tempass= reconstruction->Returnleptonicw() ; 
       double m_w_jj = checkmatch->first.m();
       double wjj_w = tempass/ m_w_jj;
+      
       if(debug) cout<<"hang in there"<<endl;
 
       //W:s
-      //whad->Fill(           reconstruction->Returnhadronicw());
-      // wlep->Fill(           reconstruction->Returnleptonicw() );
-      //	bestbtop->Fill(       reconstruction->Returnbestbtop() );
+      whad->Fill(           reconstruction->Returnhadronicw());
+      //wlep->Fill(           reconstruction->Returnleptonicw() );
+      //bestbtop->Fill(       reconstruction->Returnbestbtop() );
       //withhad ->Fill(       reconstruction->Returnlastbtop() );
+      fastjet::PseudoJet lpw = reconstruction->Return_W4vec();
+      wparton_pt->Fill(   data.partons.Wplus[0].pT() );
+      wparton_eta->Fill(  data.partons.Wplus[0].eta() );
+      wlep_pt->Fill(      lpw.pt() );
+      wlep_eta->Fill(     lpw.eta());
 
       //retrieve the pseudojets for the b amd w jets
       std::pair<fastjet::PseudoJet, fastjet::PseudoJet> mypair =  reconstruction->Return_delta();
 
       //delta r of w and b
-      double del_r = jetcuts->Return_DR(mypair.first, mypair.second);
-      int k(0);
-      while( data.partons.B[k].id() != 5) { k++; if ( k ==5) {k = 0; break;} }
+      pair<Particle, double> read, write;
+      double del1_r = jetcuts->Return_DR(mypair.first, mypair.second);
+      reconstruction->Closest_Match( data.partons.W, mypair.second, &write );
+      reconstruction->Closest_Match( data.partons.B, mypair.first, & read);
+      double del2_r = jetcuts->Return_DR( read.first, write.first);
 
-      double del2_r = jetcuts->Return_DR(data.partons.Wplus[0], data.partons.B[k] );
-
-      drpartons_vs_drpseudos->Fill(del_r, del2_r);
       if(debug) cout<<"you finshed!"<<endl;
 
-      //information about truth parton
-      top_mass->Fill(        data.partons.top[0].m() );
-      top_eta->Fill(         data.partons.top[0].eta() );
-      top_y->Fill(           data.partons.top[0].y() );
-      top_pt->Fill(          data.partons.top[0].pT() );
 
-      fastjet::PseudoJet lpw = reconstruction->Return_W4vec();
-      wlep_pt->Fill(      lpw.pt() );
-      wlep_eta->Fill(     lpw.eta());
-      wparton_pt->Fill(   data.partons.Wplus[0].pT() );
-      wparton_eta->Fill(  data.partons.Wplus[0].eta() );
 
-      dr_vs_pseudomass->Fill( leptonpseudotop.m(), checkmatch->second );
+	  //delta R space      
+      if(tmatch)
+      	dr_vs_pseudomass->Fill( leptonpseudotop.m(), checkmatch->second );
       dr_vs_wlep_mass->Fill(lpw.m(), checkmatch->second);
-
-      deltas->Fill((del_r/del2_r), leptonpseudotop.m(), lpw.m() );
+      deltas->Fill(write.second, leptonpseudotop.m(), read.second );
+      drpartons_vs_drpseudos->Fill(del1_r, del2_r);
 
 
 
@@ -460,8 +469,7 @@ int  main(int argc, char* argv[])
       matchingEff_vs_topeta->Fill(     leptonpseudotop.eta(), tmatch);
 
 
-
-      //separate histograms of matched and unmatched pseudo top
+      //Let's fill some histograms!
       if(tmatch)
       {
       	pseudo_top_match_mass->Fill(   leptonpseudotop.m()   );
@@ -475,6 +483,15 @@ int  main(int argc, char* argv[])
       	pseudo_tbar_match_pt->Fill(       leptonpseudotop.m());
       } 
 
+      //information about truth parton
+      if(tmatch || tbarmatch)
+      {
+      	top_mass->Fill(        data.partons.top[0].m() );
+      	top_eta->Fill(         data.partons.top[0].eta() );
+      	top_y->Fill(           data.partons.top[0].y() );
+      	top_pt->Fill(          data.partons.top[0].pT() );
+      }
+
 
 
 
@@ -483,7 +500,9 @@ int  main(int argc, char* argv[])
 
 
 
+
   //_____________________________________________________
+
 
 
 
@@ -499,23 +518,28 @@ int  main(int argc, char* argv[])
 } //end main function 
 
 
+
 //check for b hadrons
-bool isBhadron(int pdg) {
+bool isBhadron(int pdg) 
+{
 	if (pdg<0) pdg *=-1;
 	if (pdg<500) return false;
-	if (pdg/100%5 == 0 || pdg/1000==5) return true; 
+
+	int q3 = (pdg/10)%10;
+	if( ( pdg/1000%5==0 && pdg/100%5 == 0 && q3>0 && q3<5) || pdg/1000%5==0 ) return true ;
 	return false;
 }
 
-void PrintPseudojets( const vector<fastjet::PseudoJet> &myjets) {
 
-
-	for(size_t n(0); n < myjets.size(); ++n) {
+void PrintPseudojets( const vector<fastjet::PseudoJet> &myjets) 
+{
+	for(size_t n(0); n < myjets.size(); ++n)
+	{
 		printf(" (pT,eta,phi,m) = (%6.1f GeV,%5.2f,%5.2f,%5.1f GeV) : \n",
 		       myjets[n].pt(),
 		       myjets[n].eta(),
 		       myjets[n].phi(),
 		       myjets[n].m());	     
 	}  
-}
+}	
 
