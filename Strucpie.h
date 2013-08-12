@@ -18,13 +18,7 @@ struct mystruct
 
 } *data;
 
-fjClustering *clustering    = new fjClustering();
-JetMatching *jetcuts        = new JetMatching();
-MyTopEvent  *reconstruction = new MyTopEvent();
 
-	//lepton pesudo top, lepW, hadW, B_W pair
-	//vector< fastjet::PseudoJet> reconstructed_partons;
-	//vector< fastjet::PseudoJet> reconstructed_2_partons;
 
 
 #endif

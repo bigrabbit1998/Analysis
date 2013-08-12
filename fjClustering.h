@@ -23,7 +23,6 @@ class fjClustering
   void PrintJets();
   void doClustering();
   void ChangeRParam( double R );
-  // void push_back(double px, double py, double pz, double E);
   void push_back(const Pythia8::Particle &part, int );
   void push_back(const Pythia8::Particle &part);
 

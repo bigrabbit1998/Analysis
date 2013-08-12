@@ -13,9 +13,11 @@ using namespace Pythia8;
 
 //__________________________
 
+
 #define _Do_RECON_true
 #define _Do_HISTOGRAMS_true
 #define _Do_MATCHING_true
+
 
 
 //_____________________________
@@ -54,12 +56,12 @@ int main(int argc, char* argv[])
 	TApplication theApp("hist", &argc, argv);
 
     //Create file on which histograms will be saved.
-	//TString of_name = "ParticleLevel_clusteringR_."+string(argv[1])+"_recon_method_.root";
-	TString of_name = "ParticleLevel_clusteringR_."+string(argv[1])+"recon_method_.root";
+	//TString of_name = "ParticleLevel_clusteringR_."+string(argv[1])+"_recon_method_1 .root";
+	TString of_name = "ParticleLevel_clusteringR_."+string(argv[1])+"_recon_method_.root";
 	TFile* outFile = new TFile("rootplots/"+of_name, "RECREATE");
 	
 	Pythia pythia("",false);
-	pythia.settings.mode("tune:pp", 4);
+	pythia.settings.mode("tune:pp", 4 ); 
 	//pythia.settings.resetMode("tune:pp");
 	pythia.readFile("particlesettings.cmnd");
 	pythia.init(2212,2212,7000);
@@ -236,36 +238,30 @@ int main(int argc, char* argv[])
 				continue;
 			}
 
-			if(!particle.isFinal()) continue;
+			if(! particle.isFinal()) continue;
 
 			if(isTau( particle) && ( particle.mother1() == position1 || particle.mother1() == position2 ) ) { skip = true; break; }
 
-				//if( isNu(particle) && ( m1.idAbs() ==24 || m2.idAbs() ==24) ) 
 			if( isNu(particle) && ( particle.mother1()==position1 || particle.mother1() ==position2) ) 
 				{ neutrinos.push_back(particle); continue; }
 
 			if( isMu(particle) && ( particle.mother1() ==position2 || particle.mother1() ==position1 ) )  
-			{ 
-					//if(m2.id() == -24 || m1.id() == -24 ) skipevent2 = true; 
-					//if(m1.id() == 24 || m2.id() == 24) skipevent1=true; 
-				muons.push_back(particle); continue; 
-			}
-				//if( isElectron( particle) && ( m1.idAbs() ==24 || m2.idAbs() ==24) )  
+				{ muons.push_back(particle); continue; }
+
 			if( isElectron( particle) && ( particle.mother1() ==position2 || particle.mother1() ==position1)  )  
-			{ 
-					//if(m2.id() == -24 || m1.id() == -24) skipevent2 = true;
-					//if(m1.id() == 24 || m2.id() ==24 ) skipevent1=true;
-				electrons.push_back (particle); continue; 
-			}
+				{ electrons.push_back (particle); continue; }
 
-			clustering->push_back(particle,-1);
+			clustering->push_back(particle,-1); 
 		}
-
-		if( W.size() != tops.size() ) continue; 
 
 
 		if(Debug) cout <<"size of tops is: " << tops.size() << endl; 
+		if( W.size() != tops.size() ) { cout<<" WHOAH! An extra particle entered your method"<<endl; continue; } 
+		
+
 		if( tops.size() != 2) { cout <<"The number of tops is not 2! \n\n"<<endl; continue;	}
+		
+
 		if( skipevent1 && skipevent2 ) 	{ cout<<"dileptonic decay from t-tbar \n \n"<<endl;  continue;}
 		if( skip && excludeTau ) { cout<<"we found a tau! \n\n "<<endl; continue; }
 		if(  electrons.size() ==0 && muons.size() == 0  ) { cout<<"all hadronic decay\n\n"<<endl; continue; }
@@ -276,8 +272,7 @@ int main(int argc, char* argv[])
 		if (Debug  && iev < 20)
 		{
 			printf("\nEvent %d:\n",iev);
-			printf("  We found %d b-quarks\n",int(B.size()));
-			
+			printf("  We found %d b-quarks\n",int(B.size())) ;
 			clustering->PrintJets(); 
 		}
 
@@ -300,19 +295,15 @@ int main(int argc, char* argv[])
 		#ifdef _Do_RECON_true
 
 		if( !( matching->SelectedEvent(2,2,4) ) ) { cout<<"this event will be discared now! "<<endl; continue; } 
+
 		bool tmatch(false), tbarmatch(false);
 		fastjet::PseudoJet leptonpseudotop, leptonicw, hadronicw, lastbtop, bestbop ;
 		Particle nearestparton, usefulW;
 
 
-		//if(atol(argv[3]) == 1)	
 		recons->Recon_Mass_Method_1( btaggedjets, lightjets, neutrinos, muons, electrons, &leptonpseudotop);
-
-		
-		//if( atol(argv[3]) == 2)	recons->Recon_Mass_Method_2( btaggedjets, lightjets, neutrinos, muons, electrons, &leptonpseudotop);
-		
-
 		recons->Closest_Match( tops, leptonpseudotop, &nearestparton);
+
 		if(nearestparton.id() ==  6 ) tmatch = true;
 		if(nearestparton.id() == -6 ) tbarmatch = true;
 
@@ -325,22 +316,18 @@ int main(int argc, char* argv[])
 		else if( temporary[1].second) { usefulW = temporary[1].first; }		
 		else { cout<<"something wrong with finding the hadronic w decay"<<endl; }
 
-		double del_partons_pseudotop = recons->Return_DR( nearestparton, leptonpseudotop); 
 
 		#endif
-
 
 
 		if ( iev < 100 ) cout<<"I finished ! " <<endl;
 
 
-
-
 		#ifdef _Do_HISTOGRAMS_true
 
+		double del_partons_pseudotop = recons->Return_DR( nearestparton, leptonpseudotop); 
+		
 		dr_vs_pseudomass->Fill( leptonpseudotop.m(), del_partons_pseudotop );
-
-
 
 
 		pseudo_mass->Fill( leptonpseudotop.m());

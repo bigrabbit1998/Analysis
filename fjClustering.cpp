@@ -48,7 +48,6 @@ void fjClustering::ClearJets()
 //this function will print the current jets that have been clustered
 void fjClustering::PrintJets()
 {
-  
   std::cout<<"Number of  output jets is: "<<outputJets.size()<<std::endl;
   for (int  i = 0; i < outputJets.size(); i++)
   {
@@ -69,12 +68,10 @@ bool ComparePt(fastjet::PseudoJet a, fastjet::PseudoJet b) {
 //this does the clustering
 void fjClustering::doClustering()
 {
-  
   fastjet::ClusterSequence cluster_seq(inputJets, fjJetDefinition);
   double pTcut=8.0;
   outputJets = cluster_seq.inclusive_jets(pTcut);
   std::sort(outputJets.begin(), outputJets.end(), ComparePt);
-  
 }
 
 void fjClustering::push_back(const Pythia8::Particle &part, int pid)
@@ -89,7 +86,6 @@ void fjClustering::push_back(const Pythia8::Particle &part, int pid)
   //delete myjet2;
   //  inputJets.push_back(fastjet::PseudoJet(px,py,pz,E));
   //inputJets.push_back(fastjet::PseudoJet(px,py,pz,E));
-
 }
 
 void fjClustering::push_back(const Pythia8::Particle &part)

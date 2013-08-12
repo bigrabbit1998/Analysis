@@ -100,12 +100,10 @@ void JetMatching::Closest_Match(const Pythia8::Particle & parton, const Pseudove
   }
 
   *sendback = input_jets[position];
-
 }
 
 
-void JetMatching::Closest_Match(const Particlevector & partons, const fastjet::PseudoJet & pseudotop, 
-                                Pythia8::Particle * booger)
+void JetMatching::Closest_Match(const Particlevector & partons, const fastjet::PseudoJet & pseudotop, Pythia8::Particle * booger)
 {
   double temp_del( 0 ), del(999);
   int position(0);
@@ -116,7 +114,6 @@ void JetMatching::Closest_Match(const Particlevector & partons, const fastjet::P
     double temp_del= Return_DR(parton_i, pseudotop);
 
     if(del > temp_del ) { del = temp_del ;  position = i;  }
-
   }
 
   *booger = partons[position];
@@ -127,9 +124,6 @@ void JetMatching::Closest_Match(const Particlevector & partons, const fastjet::P
 //does matching
 void JetMatching::Match_method_1(const Particlevector &particles, const  Pseudovector &input_jets, Pseudovector *sendback ) 
 {
-
-  //vector of matched jets and pairs
-  //vector<std::pair<P, Pseudovector> > matchedpairs;
 
   for( size_t ijet=0 ; ijet < input_jets.size() ; ++ijet) 
   {
@@ -143,7 +137,6 @@ void JetMatching::Match_method_1(const Particlevector &particles, const  Pseudov
      double tempd = Return_DR(pe, nth_jet);
 
      if( pe.pT() > m_ptmin && fabs(pe.eta()) < m_etamax && tempd < m_DeltaR ) matched=true; 
-
    }
 
    if(matched) sendback->push_back(nth_jet);  
@@ -201,7 +194,6 @@ void JetMatching::PrintMatches()
 }
 
 
-
 //this will be not be needed later
 void JetMatching::RemoveSubset(const Pseudovector& subset,const Pseudovector& set, Pseudovector *newset) 
 {
@@ -229,7 +221,6 @@ void JetMatching::RemoveSubset(const Pseudovector& subset,const Pseudovector& se
 //send in clustered jets and particles that should be removed from jets
 void JetMatching::OverlapRemoval(const Particlevector &input_particles, const Pseudovector &complete_jets, Pseudovector * sendback)
 {
-
   sendback->clear();
   for (size_t ijet=0; ijet < complete_jets.size();++ijet) 
   {

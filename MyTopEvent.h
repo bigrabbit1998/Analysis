@@ -12,10 +12,6 @@
 #include "fastjet/ClusterSequence.hh"
 
 
-
-
-//this class will recieve all information of top event 
-//and reconstruct the top mass. 
 class MyTopEvent/*:: public TNamed*/
 {
 
@@ -26,8 +22,6 @@ public:
 
 
     MyTopEvent();
-
-
 
 
     void BestPairs(const pseudovector &  , const fastjet::PseudoJet &, fastjet::PseudoJet * );
@@ -67,9 +61,9 @@ public:
 
     std::pair<fastjet::PseudoJet, fastjet::PseudoJet> m_pair;
 
-    fastjet::PseudoJet m_leptonw, m_leptonicw, m_hadronicw, m_MET, m_bestbtop, m_lastbtop;
+    fastjet::PseudoJet m_leptonicw, m_hadronicw, m_MET, m_bestbtop, m_lastbtop;
 
-    pseudovector m_bjets, m_lightjets, m_tvectors;
+    pseudovector m_bjets, m_lightjets, m_neutrinosolutions;
 
     particlevector m_muons, m_electrons, m_neutrinos;
 
