@@ -1,0 +1,11 @@
+#settings for hist program
+
+#SoftQCD:minBias = off
+#SoftQCD:singleDiffractive = off
+#SoftQCD:doubleDiffractive = off
+HardQCD:all = off
+PartonLevel:FSR = on
+PartonLevel:ISR = on 
+HadronLevel:all = on
+Top:qqbar2ttbar = on
+Top:gg2ttbar = on

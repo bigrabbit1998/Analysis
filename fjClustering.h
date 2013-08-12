@@ -2,12 +2,11 @@
 #define FJCLUSTERING__HH 1
 
 #include <string>
-
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequence.hh"
-#include<iostream> // needed for io
-#include<sstream>  // needed for internal io
-#include<vector>
+#include <iostream> // needed for io
+#include <sstream>  // needed for internal io
+#include <vector>
 #include <cstdio>
 #include "Pythia.h"
 
@@ -23,6 +22,7 @@ class fjClustering
   void ClearJets();
   void PrintJets();
   void doClustering();
+  void ChangeRParam( double R );
   // void push_back(double px, double py, double pz, double E);
   void push_back(const Pythia8::Particle &part, int );
   void push_back(const Pythia8::Particle &part);

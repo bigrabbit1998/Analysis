@@ -1,56 +1,46 @@
-#ifndef JETMATCHING__HH
+#ifndef JETMATCHING__HH 
 #define JETMATCHING__HH 1
 
 #include "TLorentzVector.h"
-#include "fjClustering.h"
-#include "MyEvent.h"
+#include <iostream> 
+#include <sstream>
+#include <string>
+#include <vector>
+#include <cstdio>
 
 class JetMatching{
 
  public:
   
-  typedef vector<fastjet::PseudoJet> Pseudovector;
-  typedef vector<Pythia8::Particle> Particlevector;
+  typedef std::vector<fastjet::PseudoJet> Pseudovector;
+  typedef std::vector<Pythia8::Particle> Particlevector;
   
   //constructor
   JetMatching();
-  void Clear();
   
-
-  //this removes Pseudovector that are close to input particles
-  Pseudovector OverlapRemoval(const Particlevector&,const Pseudovector&);
-  
-
-  //check for event requirements
-  bool SelectedEvent(int,int, int);
-
-
   //delta r
   double Return_DR(const Pythia8::Particle &,  const Pythia8::Particle &);
   double Return_DR(const fastjet::PseudoJet &, const fastjet::PseudoJet &);
   double Return_DR(const Pythia8::Particle &,  const fastjet::PseudoJet &);
 
   // matching is done here
-  void SetParam( double,double,double);  
+  void Clear();
+  void Closest_Match( const Particlevector & , const fastjet::PseudoJet & , Pythia8::Particle * );
+  void Closest_Match(const Pythia8::Particle &, const Pseudovector &, fastjet::PseudoJet * );
+  void cuts( double ptcuts, double etacuts, Pseudovector * sendback);
+  void Match_method_1(const Particlevector & , const Pseudovector &, Pseudovector * );
+  void Match_method_2(const Particlevector & , const Pseudovector &, Pseudovector *);
+  //void Match_method_3(const Particlevector & , const Pseudovector &, std::vector<std::pair<Pythia8::Particle, fastjet::PseudoJet> *);
+  void OverlapRemoval(const Particlevector &,  const Pseudovector &, Pseudovector * );
   void PrintMatches();
-  bool ComparePt(fastjet::PseudoJet, fastjet::PseudoJet );
-  bool ChiSquare(TLorentzVector, TLorentzVector );
+  void RemoveSubset(const Pseudovector& ,const Pseudovector& , Pseudovector *);
+  void SetParam( double,double,double);  
   
 
-  //recieves ptcut, etacut, and jets to be cut
-  Pseudovector Cuts(const Pseudovector&, double ptcut, double etacut );
-
-  //matched a set of particle sot Pseudovector
-  Pseudovector Match(const Particlevector &,const Pseudovector&);
-  void Match(const Particlevector &particles, const  Pseudovector &input_jets, Pseudovector *matchedpairs );
-
-  //this removes selected jets from 
-  Pseudovector RemoveSubset(const Pseudovector &,const Pseudovector& );
-
-
-  void RemoveSubset(const Pseudovector& subset,const Pseudovector& set, Pseudovector *newset);
-
-
+  bool ChiSquare(TLorentzVector, TLorentzVector ); 
+  bool ComparePt(fastjet::PseudoJet, fastjet::PseudoJet );
+  bool SelectedEvent(int,int, int);
+      
 
  private:
   

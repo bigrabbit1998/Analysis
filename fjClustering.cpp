@@ -3,6 +3,12 @@
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/ClusterSequence.hh"
 
+void fjClustering::ChangeRParam( double R )
+{
+  fjJetDefinition = fastjet::JetDefinition(fastjet::kt_algorithm, R, fastjet::E_scheme, fastjet::Best);
+  std::cout<<fjJetDefinition.description()<<std::endl;
+
+}
 
 fjClustering::fjClustering()
 {
@@ -75,12 +81,12 @@ void fjClustering::push_back(const Pythia8::Particle &part, int pid)
 {
   //fastjet::PseudoJet *jet= new fastjet::PseudoJet(px,py,pz,E);
   //inputJets.push_back(jet);
-  fastjet::PseudoJet *myjet2 = new fastjet::PseudoJet(part.px(),part.py(),part.pz(),part.e());
-  fastjet::PseudoJet myjet3 = *myjet2; 
-  myjet3.set_user_index (pid);  
+  //fastjet::PseudoJet *myjet2 = new fastjet::PseudoJet(part.px(),part.py(),part.pz(),part.e());
+  fastjet::PseudoJet myjet3(part.px(),part.py(),part.pz(),part.e());
+  myjet3.set_user_index (pid); 
   inputJets.push_back(myjet3);
   //event.push_back(fastjet::PseudoJet(px,py,pz,E));
-  delete myjet2;
+  //delete myjet2;
   //  inputJets.push_back(fastjet::PseudoJet(px,py,pz,E));
   //inputJets.push_back(fastjet::PseudoJet(px,py,pz,E));
 
@@ -88,7 +94,7 @@ void fjClustering::push_back(const Pythia8::Particle &part, int pid)
 
 void fjClustering::push_back(const Pythia8::Particle &part)
 {
-  int pid=part.id();
+  int pid=-1;
   push_back(part,pid);
     
 }
