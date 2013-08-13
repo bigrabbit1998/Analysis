@@ -1,5 +1,7 @@
 #include "MyTopEvent.h"
 
+#define _PZ_1
+
 typedef vector<fastjet::PseudoJet> pseudovector;
 typedef vector<Pythia8::Particle> particlevector;
 
@@ -274,9 +276,10 @@ fastjet::PseudoJet MyTopEvent::Summation(const particlevector &temporary)
 
     Neutrino_Pz_Solutions(lepton, met);
 
-    double maxpz(0), tempdif(0), diff(0), tempmass(0), M_W2 = ( m_true_w * m_true_w ) ;
+    double maxpz(0), tempdif(0), diff(-99), tempmass(0), M_W2 = ( m_true_w * m_true_w ) ;
 
     #ifdef _Pz_2
+
     for(size_t i(0); i < m_neutrinosolutions.size(); ++i)
     {
       double n_z = m_neutrinosolutions[i].pz();
@@ -296,26 +299,24 @@ fastjet::PseudoJet MyTopEvent::Summation(const particlevector &temporary)
     #ifdef _PZ_1
 
     double
-    pwx = lepton.px() + met.px(),
-    pwy = lepton.py() + met.py();
-    pwE = sqrt(M_W2 + pwx*pwx + pwy*pwy + pwz*pwz);
+    pwx = lepton.px() + m_neutrinosolutions[0].px(),
+    pwy = lepton.py() + m_neutrinosolutions[0].py();
     for(size_t i(0); i < m_neutrinosolutions.size(); ++i)
     {
-      pwz = lepton.pz() + m_neutrinosolutions[i].pz(); 
+      double pwz = lepton.pz() + m_neutrinosolutions[i].pz(); 
 
       tempdif = pwz;
 
       if(tempdif > diff)
       {     
         diff= tempdif;
-        maxpz = n_z;
+        maxpz = m_neutrinosolutions[i].pz();
       }  
     }
-    #endif 
 
+    #endif 
+   
     double 
-    pwx = lepton.px() + met.px(),
-    pwy = lepton.py() + met.py(),
     pwz = lepton.pz() + maxpz,   
     pwE = sqrt( M_W2 + pwx*pwx + pwy*pwy + pwz*pwz);
 
