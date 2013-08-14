@@ -5,6 +5,7 @@
 
 void fjClustering::ChangeRParam( double R )
 {
+  
   fjJetDefinition = fastjet::JetDefinition(fastjet::kt_algorithm, R, fastjet::E_scheme, fastjet::Best);
   std::cout<<fjJetDefinition.description()<<std::endl;
 
