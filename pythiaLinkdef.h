@@ -13,6 +13,7 @@
 #ifdef PYTHIA8_COMPLETE_ROOT_DICTIONARY
 // For tree.cc, none of the following (generator-internal)
 // classes is needed. Thus excluded from the default Linkdef.h.
+
 #pragma link C++ class Pythia8::ParticleData+;
 #pragma link C++ class Pythia8::ParticleDataEntry+;
 #pragma link C++ class Pythia8::DecayChannel+;
