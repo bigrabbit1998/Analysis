@@ -56,32 +56,16 @@ void JetMatching::SetParam(double DeltaR , double etamax, double ptmin)
 }
 
 
-/*void JetMatching::Match_method_3(const Particlevector & input_particles, const Pseudovector & input_jets,
-                                 std::vector<std::pair<Pythia8::Particle, fastjet::PseudoJet> *sendback)
-{
-  std:pair<Pythia8::Particle, fastjet::PseudoJet> send;
-
-  double closest(0);
-  for(size_t i(0); i < input_jets.size() ; ++i)
-  {
-
-    Closest_Match(input_particles, input_jets[i], &(send.first ) );
-    send.second = input_jets[i];
-
-    sendback->push_back(send);
-  }
-
-}
-
-*/
 
 //match closet pseudo jet to a parton
-void JetMatching::Match_method_2( const Particlevector & particles, const  Pseudovector &input_jets,  Pseudovector *sendback )  
+void JetMatching::Match_method_2( const Particlevector & particles, const  Pseudovector &input_jets, Pseudovector *sendback )  
 {
+  
   for(size_t i(0); i < particles.size(); ++i)
   {
     fastjet::PseudoJet send; 
     Closest_Match(particles[i], input_jets, &send);
+
     sendback->push_back(send);
   }
   if(particles[0].idAbs() == 5) { m_size_of_bjets = sendback->size(); }
@@ -163,7 +147,7 @@ bool JetMatching::SelectedEvent( int size_b, int size_l, int size_all )
 
 
 //pt, eta cuts
-void JetMatching::cuts( double ptcuts, double etacuts, Pseudovector * sendback)
+void JetMatching::Cuts( double ptcuts, double etacuts, Pseudovector * sendback)
 {
 
   Pseudovector temp;

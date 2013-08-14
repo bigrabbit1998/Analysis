@@ -27,19 +27,17 @@ public:
     void BestPairs(const pseudovector &  , const fastjet::PseudoJet &, fastjet::PseudoJet * );
     double Return_DR( const Pythia8::Particle & , const fastjet::PseudoJet &);
     
-    void BuildMET(const particlevector &);
+
     void Clear();  
     void Closest_Match( const particlevector & , const fastjet::PseudoJet & , Pythia8::Particle *);
-    void Ininitalize_Reconstruction(const pseudovector &, const pseudovector& ,const particlevector & , const particlevector & ) ;
-    void LeptonicW(const particlevector&, const particlevector& , const particlevector&, fastjet::PseudoJet * ) ;
-    void Neutrino_Pz_Solutions(const fastjet::PseudoJet &, const fastjet::PseudoJet &);
-    void Recon_Mass_Method_1(const pseudovector &,const pseudovector&, const particlevector & nu, 
-                             const particlevector & mu, const particlevector & els, fastjet::PseudoJet * );
+    void Initialize_Reconstruction(const pseudovector &, const pseudovector &, const particlevector & ) ;
+    void LeptonicW(const particlevector& , const particlevector& ) ; 
+    void Neutrino_Pz_Solutions(const fastjet::PseudoJet & );
+    void Recon_Mass_Method_1( const particlevector & mu, const particlevector & els, fastjet::PseudoJet * );
 
-    void Recon_Mass_Method_2(const pseudovector &, const pseudovector&, const particlevector & nu, 
-                             const particlevector & mu, const particlevector & els, fastjet::PseudoJet * );
+    void Recon_Mass_Method_2( const particlevector & mu, const particlevector & els, fastjet::PseudoJet * );
 
-
+    void Parton_leptonic( const Pythia8::Particle & , const Pythia8::Particle &);
 
 
     std::pair<fastjet::PseudoJet, fastjet::PseudoJet>  *Return_B_W() 
@@ -52,8 +50,7 @@ public:
       if ( type == "HW")       return &m_hadronicw; 
       if ( type == "LW")       return &m_leptonicw;
       if ( type == "BST"  )    return &m_bestbtop;
-      if ( type == "LBT"  )    return &m_lastbtop;
-
+      
     }
 
 
@@ -62,6 +59,8 @@ public:
     std::pair<fastjet::PseudoJet, fastjet::PseudoJet> m_pair;
 
     fastjet::PseudoJet m_leptonicw, m_hadronicw, m_MET, m_bestbtop, m_lastbtop;
+
+    Pythia8::Particle m_lepton_top, m_leptondecayw;
 
     pseudovector m_bjets, m_lightjets, m_neutrinosolutions;
 

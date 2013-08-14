@@ -1,6 +1,7 @@
 #include "MyTopEvent.h"
 
-#define _PZ_1
+#define _Pz_2
+
 
 typedef vector<fastjet::PseudoJet> pseudovector;
 typedef vector<Pythia8::Particle> particlevector;
@@ -60,49 +61,46 @@ void MyTopEvent::Closest_Match(const particlevector & partons, const fastjet::Ps
 
 
 // leptonic pseudo top from leptonic with its w and b jets 
-void MyTopEvent::Recon_Mass_Method_1( const pseudovector & Bjets,const pseudovector &Lightjets, const particlevector & nu, 
-                                     const particlevector & mu,const particlevector & els, fastjet::PseudoJet *sendback )
+void MyTopEvent::Recon_Mass_Method_1( const particlevector & mu,const particlevector & els, fastjet::PseudoJet *sendback )
 {
 
   //why is this called!!!!
-  if(Bjets.size() < 2 || Lightjets.size() < 2 ){ cout<< "something went terriblly wrong"; abort(); }  
+  if(m_bjets.size() < 2 || m_lightjets.size() < 2 ){ cout<< "something went terriblly wrong"; abort(); }  
 
   //hadronic w by two highest pt non-bjets
-  fastjet::PseudoJet hadronicw =operator+(Lightjets[1],Lightjets[0]);
+  fastjet::PseudoJet hadronicw =operator+(m_lightjets[1],m_lightjets[0]);
   fastjet::PseudoJet remainingbjet; 
 
   //find the best hadronic w and b jet pair
-  BestPairs( Bjets, hadronicw, &remainingbjet);
+  BestPairs( m_bjets, hadronicw, &remainingbjet);
 
   //make call to create leptonic W
-  fastjet::PseudoJet leptonicVV;
-  LeptonicW(nu, mu, els, &leptonicVV);
+  LeptonicW( mu, els);
 
   //create leptonic pseudow
-  fastjet::PseudoJet lighttop  = operator+(remainingbjet, leptonicVV);
+  fastjet::PseudoJet lighttop  = operator+(remainingbjet, m_leptonicw);
   
-  m_leptonicw = leptonicVV;
   m_hadronicw = hadronicw;
 
-  m_pair.first = remainingbjet;
-  m_pair.second = leptonicVV ;
+  //m_pair.first = remainingbjet;
+  //m_pair.second = m_leptonicw;
 
   *sendback = lighttop;
 }
 
 
 //method two for reconstructing the pseudotop
-void MyTopEvent::Recon_Mass_Method_2(const pseudovector & Bjets, const pseudovector& Lightjets, const particlevector & ETmiss, 
-                                     const particlevector & mu, const particlevector & els, fastjet::PseudoJet * sendback )
+void MyTopEvent::Recon_Mass_Method_2(const particlevector & mu, const particlevector & els, fastjet::PseudoJet * sendback )
 {
   //why is this called!!!!
+  if(m_bjets.size() < 2 || m_lightjets.size() < 2 ){ cout<< "something went terriblly wrong"; abort(); }  
+  
   fastjet::PseudoJet lightop;
-  if(Bjets.size() < 2 || Lightjets.size() < 2 ){ cout<< "something went terriblly wrong"; abort(); }  
-  
+
   //make the hadronic pseudow from talk prescriptio
-  m_hadronicw = operator+(Lightjets[0], Lightjets[1]);
+  m_hadronicw = operator+(m_lightjets[0], m_lightjets[1]);
   
-  LeptonicW(ETmiss, mu, els, & m_leptonicw);
+  LeptonicW(mu, els);
 
   vector<fastjet::PseudoJet> leptons;
   fastjet::PseudoJet one, two, three, final;
@@ -116,52 +114,52 @@ void MyTopEvent::Recon_Mass_Method_2(const pseudovector & Bjets, const pseudovec
   
 
   double dif(999), tempdif(0), mass(0);
-  int position_b, position_nu, position_lep;
+  double truetopmass = m_lepton_top.m();
+
+  int position_b(0), position_nu(0), position_lep(0);
 
   for( size_t i(0); i < m_neutrinosolutions.size(); ++i)
   {
-    for(size_t m(0) ; m < Bjets.size(); ++m)
+    for(size_t m(0) ; m < m_bjets.size(); ++m)
     {
-     one = operator+(m_neutrinosolutions[i], Bjets[m]);
+     one = operator+(m_neutrinosolutions[i], m_bjets[m]);
      for(size_t n(0); n < leptons.size(); ++n )
      {
        two = operator+(one, leptons[n]);
        mass = two.m();
-       tempdif = fabs(mass - m_topmass ) ;
+       tempdif = fabs(mass - truetopmass ) ;
        if(tempdif < dif ) {dif = tempdif; final = two; position_lep = n; position_nu = i; position_b = m; }
      } 
    }
-
  }
 
  fastjet::PseudoJet lepw = operator+( leptons[position_lep],  m_neutrinosolutions[position_nu] );
- fastjet::PseudoJet bjet = Bjets[position_b];
- std::pair< fastjet::PseudoJet, fastjet::PseudoJet> send (bjet, lepw);
- m_pair = send;
+ fastjet::PseudoJet bjet = m_bjets[position_b];
+
+ m_pair.first = bjet;
+ m_pair.second = lepw;
 
  *sendback = final;
 }
 
 
 
-void MyTopEvent::Ininitalize_Reconstruction(const pseudovector & Bjets, const pseudovector& Lightjets,
-                                            const particlevector & mu, const particlevector & els ) 
+void MyTopEvent::Initialize_Reconstruction(const pseudovector & Bjets, const pseudovector& Lightjets,
+                                            const particlevector &MET) 
 {
-  /*
+  
   m_bjets = Bjets;
   m_lightjets = Lightjets;
-  m_muons = mu;
-  m_electrons = els; 
-  */
+  m_MET = Summation(MET);
 }
 
 
-void MyTopEvent::Neutrino_Pz_Solutions( const fastjet::PseudoJet & lepton, const fastjet::PseudoJet &MET)
+void MyTopEvent::Neutrino_Pz_Solutions( const fastjet::PseudoJet & lepton )
 {
 
   double MET_phi = m_MET.phi();
   double MET_et = m_MET.eta();
-  double M_W=80.3999;
+  double M_W=m_leptondecayw.m();
   double M_W2 = M_W*M_W;
 
   double 
@@ -207,7 +205,6 @@ fastjet::PseudoJet MyTopEvent::Summation(const particlevector &temporary)
 {
   double px(0),py(0),pz(0),e(0);
 
-  //sum over all leptons
   for(size_t v(0); v < temporary.size(); ++v)
   {
     px+=temporary[v].px();
@@ -221,18 +218,14 @@ fastjet::PseudoJet MyTopEvent::Summation(const particlevector &temporary)
 }
 
 
-//here we take the particle considered to contribute to MET
-/*void MyTopEvent::BuildMET(const std::vector<Pythia8::Particle> & input_particles)
+void MyTopEvent::Parton_leptonic( const Pythia8::Particle & top, const Pythia8::Particle & w)
 {
-
-  fastjet::PseudoJet ETmiss = Summation( input_particles );
-
-  m_MET = ETmiss; 
-
-};*/
+  m_lepton_top = top; 
+  m_leptondecayw = w;
+}
 
 
-//returns position of best top-w pair
+  //returns position of best top-w pair
   void MyTopEvent::BestPairs( const pseudovector & btaggedjets, const fastjet::PseudoJet & ws, fastjet::PseudoJet * sendback)
   {
 
@@ -254,60 +247,54 @@ fastjet::PseudoJet MyTopEvent::Summation(const particlevector &temporary)
   } 
 
 
-
-//this will form the leptonic w based on the met built
-  void MyTopEvent::LeptonicW(const particlevector &nutrino, const particlevector& muon, const particlevector& electron, 
-                             fastjet::PseudoJet * sendback) 
+  //this will form the leptonic w based on the met built
+  void MyTopEvent::LeptonicW(const particlevector& muon, const particlevector& electron ) 
   {
 
-  // make sure input makes sense
+    // make sure input makes sense
     if (muon.size()+electron.size()!=1) 
       fatal(Form("There must only be one lepton! You are giving me %d electrons and %d muons.",
             electron.size(),muon.size()));
 
-    fastjet::PseudoJet met,mu,els, lepton;
 
-    met = Summation(nutrino);
+    fastjet::PseudoJet mu, els, lepton;
+
     mu = Summation(muon);
     els = Summation(electron);
 
     if( muon.size() !=0 ) lepton = mu;
     else if( electron.size() !=0) lepton = els;
 
-    Neutrino_Pz_Solutions(lepton, met);
+    Neutrino_Pz_Solutions(lepton);
 
-    double maxpz(0), tempdif(0), diff(-99), tempmass(0), M_W2 = ( m_true_w * m_true_w ) ;
+    double maxpz(0), tempdif(0), diff(99), tempmass(0); 
+    double M_W = m_leptondecayw.m();
+    double M_W2 = M_W *M_W ;
+    double
+    pwx = lepton.px() + m_neutrinosolutions[0].px(),
+    pwy = lepton.py() + m_neutrinosolutions[0].py();
 
-    #ifdef _Pz_2
+    #ifdef _Pz_1
 
-    for(size_t i(0); i < m_neutrinosolutions.size(); ++i)
+    if( m_neutrinosolutions.size() ==1 ) maxpz = m_neutrinosolutions[0].pz();
+    if( m_neutrinosolutions.size() == 2 ) 
     {
-      double n_z = m_neutrinosolutions[i].pz();
-
-      tempdif = n_z;
-      if(tempdif > diff)
-      {     
-        diff= tempdif;
-        maxpz = n_z;
-      } 
+      maxpz = ( m_neutrinosolutions[0].pz() > m_neutrinosolutions[1].pz() ) ? m_neutrinosolutions[0].pz() : m_neutrinosolutions[1].pz() ;
     }
 
 
     #endif 
 
 
-    #ifdef _PZ_1
+    #ifdef _PZ_2
 
-    double
-    pwx = lepton.px() + m_neutrinosolutions[0].px(),
-    pwy = lepton.py() + m_neutrinosolutions[0].py();
     for(size_t i(0); i < m_neutrinosolutions.size(); ++i)
     {
       double pwz = lepton.pz() + m_neutrinosolutions[i].pz(); 
 
-      tempdif = pwz;
+      tempdif = fabs(pwz);
 
-      if(tempdif > diff)
+      if(tempdif < diff)
       {     
         diff= tempdif;
         maxpz = m_neutrinosolutions[i].pz();
@@ -321,8 +308,8 @@ fastjet::PseudoJet MyTopEvent::Summation(const particlevector &temporary)
     pwE = sqrt( M_W2 + pwx*pwx + pwy*pwy + pwz*pwz);
 
 
-  //for the leptonic pseudo w
-    sendback->reset(pwx,pwy,pwz,pwE);
+    //for the leptonic pseudo w
+    m_leptonicw.reset(pwx,pwy,pwz,pwE);
 
   }
 
