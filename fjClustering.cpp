@@ -70,7 +70,7 @@ bool ComparePt(fastjet::PseudoJet a, fastjet::PseudoJet b) {
 void fjClustering::doClustering()
 {
   fastjet::ClusterSequence cluster_seq(inputJets, fjJetDefinition);
-  double pTcut=8.0;
+  double pTcut=20.0; 
   outputJets = cluster_seq.inclusive_jets(pTcut);
   std::sort(outputJets.begin(), outputJets.end(), ComparePt);
 }
