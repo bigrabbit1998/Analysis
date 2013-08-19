@@ -129,16 +129,20 @@ void MyTopEvent::Recon_Mass_Method_2(const particlevector & mu, const particleve
 	      two = operator+(one, leptons[n]);
       
 	      tempdif = fabs(two.m() - truetopmass ) ;
-	      tempet = fabs( two.eta() - m_lepton_top.eta() );
-
-	      if(tempdif <= dif )
+	      // tempet = fabs( two.eta() - m_lepton_top.eta() );
+	      if( tempdif < dif ) 
+		{
+		  
+		   dif = tempdif; final = two; position_lep = n; position_nu = i; position_b = m; 
+		}
+	      /*      if(tempdif <= dif )
 		{
 		  if(tempdif ==dif) 
 		    {
 		      if( tempet  > tempeta ) continue;  
 		    }
 		  dif = tempdif; tempeta = tempet; final = two; position_lep = n; position_nu = i; position_b = m; 
-		}
+		  }*/
 	    } 
 	}
     }

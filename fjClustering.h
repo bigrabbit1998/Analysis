@@ -26,7 +26,9 @@ class fjClustering
   void push_back(const Pythia8::Particle &part, int );
   void push_back(const Pythia8::Particle &part) ;
 
-  std::vector<fastjet::PseudoJet> *GetJets() { return &outputJets;};
+  std::vector<fastjet::PseudoJet> GetJets() { return outputJets;};
+
+  //  std::vector<fastjet::PseudoJet> GetJets() { return outputJets;};
 
  private:
   

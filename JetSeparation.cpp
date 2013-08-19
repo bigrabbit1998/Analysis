@@ -60,10 +60,10 @@ void JetMatching::SetParam(double DeltaR , double etamax, double ptmin)
 //match closet pseudo jet to a parton
 void JetMatching::Match_method_2( const Particlevector & particles, const  Pseudovector &input_jets, Pseudovector *sendback )  
 {
-  
+  sendback->clear();
+  fastjet::PseudoJet send; 
   for(size_t i(0); i < particles.size(); ++i)
   {
-    fastjet::PseudoJet send; 
     Closest_Match(particles[i], input_jets, &send);
 
     sendback->push_back(send);
@@ -72,7 +72,7 @@ void JetMatching::Match_method_2( const Particlevector & particles, const  Pseud
 }
 
 
-void JetMatching::Closest_Match(const Pythia8::Particle & parton, const Pseudovector &input_jets, fastjet::PseudoJet * sendback)
+void JetMatching::Closest_Match(const Pythia8::Particle & parton, const Pseudovector &input_jets, fastjet::PseudoJet * sendbackk)
 {
   double temp_del( 0 ), del(999);
   int position(0);
@@ -83,7 +83,7 @@ void JetMatching::Closest_Match(const Pythia8::Particle & parton, const Pseudove
       { position = n; del = temp_del;}
   }
 
-  *sendback = input_jets[position];
+  *(sendbackk) = input_jets[position];
 }
 
 

@@ -13,8 +13,8 @@ using namespace Pythia8;
 //__________________________
 
 
-#define _Do_RECON_true
-#define _Do_HISTOGRAMS_true
+#define _Do_RECON_tru
+#define _Do_HISTOGRAMS_tru
 #define _Do_MATCHING_true
 
 
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
       return 1;
     }
   
-  bool Debug= false;
+  bool Debug= true;
   bool excludeTau = true;
 
   int Nev=atol(argv[2]);  
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   // Create the ROOT application environment. 
   TApplication theApp("hist", &argc, argv);
 
-  ofstream outfile;
+  // ofstream outfile;
 
   //Create file on which histograms will be saved.
   TString of_name = "ParticleLevel_clusteringR_."+string(argv[1])+"_tune_"+string(argv[3])+"_.root";
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
   Pythia pythia("",false);
   pythia.settings.resetMode("tune:pp");
-  pythia.settings.mode("tune:pp", 3 ); 
+  pythia.settings.mode("tune:pp", 2 ); 
   pythia.readFile("particlesettings.cmnd");
   pythia.init(2212,2212,7000);
   pythia.settings.flag("print:quiet",true);
@@ -310,12 +310,12 @@ int main(int argc, char* argv[])
 #ifdef _Do_MATCHING_true
 
       vector<fastjet::PseudoJet> btaggedjets, lightjets, all_jets; 
-      all_jets = *( clustering->GetJets() ) ;
+      all_jets = clustering->GetJets();
 
       //apply Pt/eta cuts on pseudojets
       //matching->Cuts( 30.5, 4.5, &all_jets);
-
-      matching->Match_method_2(B, all_jets, & btaggedjets); 
+      matching->SetParam(13,4.5, 1.8);
+      matching->Match_method_1(B, all_jets, & btaggedjets); 
       matching->RemoveSubset( btaggedjets, all_jets, &lightjets );
 
 
@@ -348,7 +348,7 @@ int main(int argc, char* argv[])
       recons->Parton_leptonic( usefultop, usefulW);
 
       //Here we begin top reconstruction
-      recons->Initialize_Reconstruction( btaggedjets, lightjets, neutrinos); 
+      recons->Initialize_Reconstruction( btaggedjets, lightjets, ETmiss); 
       recons->Recon_Mass_Method_2( muons, electrons, &leptonpseudotop);
       recons->Closest_Match( tops, leptonpseudotop, &nearestparton); 
 
