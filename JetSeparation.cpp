@@ -36,10 +36,10 @@ double JetMatching::Return_DR(const fastjet::PseudoJet & c,const fastjet::Pseudo
   return DR;
 }
 
-double JetMatching::Return_DR( const Pythia8::Particle & c,const fastjet::PseudoJet & d)
+double JetMatching::Return_DR( const Pythia8::Particle & e,const fastjet::PseudoJet & f)
 {
   double DR(0);
-  DR = sqrt( pow( (c.eta() - d.eta()), 2) + pow( (c.phi() - d.phi()), 2 )  );
+  DR = sqrt( pow( (e.eta() - f.eta()), 2) + pow( (e.phi() - f.phi()), 2 )  );
   return DR;
 }
 
@@ -57,33 +57,35 @@ void JetMatching::SetParam(double DeltaR , double etamax, double ptmin)
 
 
 
-//match closet pseudo jet to a parton
-void JetMatching::Match_method_2( const Particlevector & particles, const  Pseudovector &input_jets, Pseudovector *sendback )  
+//match closet pseudo jet to a parto
+void  JetMatching::Match_method_2( const Particlevector & particles, const  Pseudovector &input_jets, Pseudovector *sendd )  
 {
-  sendback->clear();
-  fastjet::PseudoJet send; 
+  sendd->clear();
+ 
   for(size_t i(0); i < particles.size(); ++i)
   {
-    Closest_Match(particles[i], input_jets, &send);
+    fastjet::PseudoJet temp = Closest_Match2(particles[i], input_jets);
 
-    sendback->push_back(send);
+    //sendbackkk->push_back(sendd);
+    sendd->push_back(temp);
   }
-  if(particles[0].idAbs() == 5) { m_size_of_bjets = sendback->size(); }
+  if(particles[0].idAbs() == 5) { m_size_of_bjets = sendd->size(); }
+  // return sendd;
 }
 
 
-void JetMatching::Closest_Match(const Pythia8::Particle & parton, const Pseudovector &input_jets, fastjet::PseudoJet * sendbackk)
+fastjet::PseudoJet JetMatching::Closest_Match2(const Pythia8::Particle & parton, const Pseudovector &in_jets)
 {
   double temp_del( 0 ), del(999);
   int position(0);
-  for(size_t n(0); n < input_jets.size(); ++n)
+  for(size_t n(0); n < in_jets.size(); ++n)
   {
-    double temp_del = Return_DR(parton, input_jets[n]);
+    double temp_del = Return_DR(parton, in_jets[n]);
     if( del > temp_del) 
       { position = n; del = temp_del;}
   }
 
-  *(sendbackk) = input_jets[position];
+  return  in_jets[position];
 }
 
 

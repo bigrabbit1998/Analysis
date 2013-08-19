@@ -13,8 +13,8 @@ using namespace Pythia8;
 //__________________________
 
 
-#define _Do_RECON_tru
-#define _Do_HISTOGRAMS_tru
+#define _Do_RECON_true
+#define _Do_HISTOGRAMS_true
 #define _Do_MATCHING_true
 
 
@@ -272,15 +272,15 @@ int main(int argc, char* argv[])
 	  if( isElectron( particle) && ( M1 == position2 || M1 ==position1)  )  
 	    { electrons.push_back (particle); continue; }
 
-	  if( fabs( particle.eta() ) > 4.4 && !isNu(particle))
+	  if( fabs( particle.eta() ) > 4.5 && !isNu(particle))
 	    { ETmiss.push_back(particle); continue; } 
 	  
 	   
 	  clustering->push_back(particle,-1); 
 	}
 
-      if( skipevent1 && skipevent2 ) { cout<<"dileptonic decay from t-tbar \n \n"<<endl;  continue;}
-      if( tops.size() != 2) { cout <<"The number of tops is not 2! \n\n"<<endl; continue; }
+      if( skipevent1 && skipevent2 ) {  continue;}
+      if( tops.size() != 2 || B.size() != 2 || W.size() != 2 ) {  continue; }
       if( W.size() != tops.size() ) 
 	{
 	  if(Debug) 
@@ -294,7 +294,7 @@ int main(int argc, char* argv[])
 
 
       if( skip && excludeTau ) { cout<<"we found a tau! \n\n "<<endl; continue; }
-      if(  electrons.size() ==0 && muons.size() == 0  ) {cout<<"all hadronic decay"<<endl;  continue; }
+      if(  electrons.size() ==0 && muons.size() == 0  ) {/*cout<<"all hadronic decay"<<endl;*/  continue; }
       if(  neutrinos.size() == 0 ) { cout<<"no neutrinos \n\n"<<endl; continue; }
 
       clustering->doClustering();
@@ -311,11 +311,12 @@ int main(int argc, char* argv[])
 
       vector<fastjet::PseudoJet> btaggedjets, lightjets, all_jets; 
       all_jets = clustering->GetJets();
-
+      if(all_jets.size() == 0 ) { cout<<"something is wrong"<<endl; continue; }
       //apply Pt/eta cuts on pseudojets
       //matching->Cuts( 30.5, 4.5, &all_jets);
-      matching->SetParam(13,4.5, 1.8);
-      matching->Match_method_1(B, all_jets, & btaggedjets); 
+      // matching->SetParam(13,4.5, 1.8);
+      matching->Match_method_2(B, all_jets, &btaggedjets); 
+      // btaggedjets =  matching->Match_method_2(B, all_jets); 
       matching->RemoveSubset( btaggedjets, all_jets, &lightjets );
 
 

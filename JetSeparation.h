@@ -26,10 +26,11 @@ class JetMatching{
   // matching is done here
   void Clear();
   void Closest_Match( const Particlevector & , const fastjet::PseudoJet & , Pythia8::Particle * );
-  void Closest_Match(const Pythia8::Particle &, const Pseudovector &, fastjet::PseudoJet * );
+  //  void Closest_Match(const Pythia8::Particle &, const Pseudovector &, fastjet::PseudoJet * );
+  fastjet::PseudoJet Closest_Match2(const Pythia8::Particle &, const Pseudovector & );
   void Cuts( double ptcuts, double etacuts, Pseudovector * sendback);
   void Match_method_1(const Particlevector & , const Pseudovector &, Pseudovector * );
-  void Match_method_2(const Particlevector & , const Pseudovector &, Pseudovector *);
+  void Match_method_2(const Particlevector & , const Pseudovector &, Pseudovector * );
   //void Match_method_3(const Particlevector & , const Pseudovector &, std::vector<std::pair<Pythia8::Particle, fastjet::PseudoJet> *);
   void OverlapRemoval(const Particlevector &,  const Pseudovector &, Pseudovector * );
   void PrintMatches();
